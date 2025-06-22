@@ -1,0 +1,129 @@
+/* Admin-specific styles */
+
+/* Avatar circle for user profiles */
+.avatar-circle {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: #08A486;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 1.2rem;
+}
+
+/* Sidebar styles */
+.sidebar-open {
+  width: 280px;
+}
+
+.sidebar-closed {
+  width: 80px;
+}
+
+/* Dashboard card hover effects */
+.dashboard-card {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.dashboard-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+/* Status badges */
+.status-badge {
+  padding: 0.25rem 0.5rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+}
+
+.status-badge-success {
+  background-color: rgba(25, 135, 84, 0.2);
+  color: #198754;
+}
+
+.status-badge-warning {
+  background-color: rgba(255, 193, 7, 0.2);
+  color: #ffc107;
+}
+
+.status-badge-danger {
+  background-color: rgba(220, 53, 69, 0.2);
+  color: #dc3545;
+}
+
+/* Custom table styles */
+.table-custom th {
+  font-weight: 600;
+  background-color: #f8f9fa;
+}
+
+.table-custom td {
+  vertical-align: middle;
+}
+
+/* Sortable column headers */
+.sortable-header {
+  cursor: pointer;
+  user-select: none;
+}
+
+.sortable-header:hover {
+  background-color: #f0f0f0;
+}
+
+.sort-indicator {
+  margin-left: 5px;
+}
+
+/* Card header with icon */
+.card-header-custom {
+  display: flex;
+  align-items: center;
+  font-weight: 600;
+}
+
+.card-header-custom i {
+  margin-right: 8px;
+}
+
+/* Custom form styles */
+.form-control:focus {
+  border-color: #08A486;
+  box-shadow: 0 0 0 0.25rem rgba(8, 164, 134, 0.25);
+}
+
+.btn-primary {
+  background-color: #08A486;
+  border-color: #08A486;
+}
+
+.btn-primary:hover, .btn-primary:focus {
+  background-color: #078a71;
+  border-color: #078a71;
+}
+
+/* Image preview container */
+.image-preview {
+  max-width: 100%;
+  max-height: 200px;
+  border: 1px solid #dee2e6;
+  border-radius: 0.25rem;
+  padding: 0.25rem;
+  margin-top: 0.5rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .sidebar-open, .sidebar-closed {
+    position: absolute;
+    z-index: 1000;
+  }
+  
+  .sidebar-closed {
+    transform: translateX(-100%);
+  }
+} 
