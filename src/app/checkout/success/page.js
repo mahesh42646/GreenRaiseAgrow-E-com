@@ -57,7 +57,7 @@ export default function CheckoutSuccessPage() {
             </div>
             
             <p className="mb-4">
-              We've sent a confirmation email to your email address with the order details.
+              We&apos;ve sent a confirmation email to your email address with the order details.
               You can check the status of your order at any time in your account.
             </p>
             

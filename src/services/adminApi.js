@@ -338,7 +338,7 @@ export const adminTicketsAPI = {
   }
 };
 
-export default {
+const adminAPI = {
   auth: adminAuthAPI,
   dashboard: dashboardAPI,
   orders: adminOrdersAPI,
@@ -347,4 +347,6 @@ export default {
   products: productAPI,
   blogs: blogAPI,
   contacts: contactAPI
-}; 
+};
+
+export default adminAPI; 

@@ -136,9 +136,11 @@ export const contactAPI = {
   }),
 };
 
-export default {
+const apiServices = {
   product: productAPI,
   blog: blogAPI,
   profile: profileAPI,
   contact: contactAPI,
-}; 
+};
+
+export default apiServices; 

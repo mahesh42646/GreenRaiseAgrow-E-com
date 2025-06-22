@@ -53,39 +53,40 @@ export default function AccountPage() {
         country: user.country || 'United States'
       });
       
+      // Define fetchUserData inside useEffect
+      const fetchUserData = async () => {
+        try {
+          if (!user || !user.userId) {
+            console.error('No user ID available');
+            return;
+          }
+
+          // Fetch user profile data
+          const userProfile = await profileAPI.getUserProfile(user.userId);
+          
+          // Fetch cart
+          const cartData = await profileAPI.getCart(user.userId);
+          
+          // Fetch wishlist
+          const wishlistData = await profileAPI.getWishlist(user.userId);
+          
+          // Set orders from API or use empty array if not available
+          setOrders(userProfile.orders || []);
+          
+          // Set wishlist from API or use empty array if not available
+          setWishlist(wishlistData || []);
+        } catch (err) {
+          console.error('Error fetching user data:', err);
+          // Set empty arrays as fallback
+          setOrders([]);
+          setWishlist([]);
+        }
+      };
+      
       // Fetch orders and wishlist
       fetchUserData();
     }
   }, [user]);
-
-  const fetchUserData = async () => {
-    try {
-      if (!user || !user.userId) {
-        console.error('No user ID available');
-        return;
-      }
-
-      // Fetch user profile data
-      const userProfile = await profileAPI.getUserProfile(user.userId);
-      
-      // Fetch cart
-      const cartData = await profileAPI.getCart(user.userId);
-      
-      // Fetch wishlist
-      const wishlistData = await profileAPI.getWishlist(user.userId);
-      
-      // Set orders from API or use empty array if not available
-      setOrders(userProfile.orders || []);
-      
-      // Set wishlist from API or use empty array if not available
-      setWishlist(wishlistData || []);
-    } catch (err) {
-      console.error('Error fetching user data:', err);
-      // Set empty arrays as fallback
-      setOrders([]);
-      setWishlist([]);
-    }
-  };
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -485,7 +486,7 @@ export default function AccountPage() {
                       </div>
                     ) : (
                       <div className="alert alert-info">
-                        You haven't placed any orders yet.
+                        You haven&apos;t placed any orders yet.
                       </div>
                     )}
                     
@@ -544,7 +545,7 @@ export default function AccountPage() {
                       </div>
                     ) : (
                       <div className="alert alert-info">
-                        You haven't placed any orders yet.
+                        You haven&apos;t placed any orders yet.
                       </div>
                     )}
                   </div>

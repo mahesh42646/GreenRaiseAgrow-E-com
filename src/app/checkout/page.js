@@ -522,7 +522,7 @@ export default function CheckoutPage() {
                       
                       <div className="alert alert-warning">
                         <i className="bi bi-exclamation-triangle me-2"></i>
-                        By clicking "Place Order", you agree to our terms and conditions and privacy policy.
+                        By clicking &quot;Place Order&quot;, you agree to our terms and conditions and privacy policy.
                       </div>
                     </>
                   )}

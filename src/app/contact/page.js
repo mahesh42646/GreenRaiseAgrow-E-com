@@ -57,7 +57,7 @@ export default function ContactPage() {
           <div className="col-12 text-center">
             <h1 className="display-5 fw-bold mb-3">Contact Us</h1>
             <p className="lead text-muted">
-              Have questions or feedback? We'd love to hear from you!
+              Have questions or feedback? We&apos;d love to hear from you!
             </p>
           </div>
         </div>
@@ -70,7 +70,7 @@ export default function ContactPage() {
                 {submitStatus === 'success' && (
                   <div className="alert alert-success" role="alert">
                     <i className="bi bi-check-circle me-2"></i>
-                    Thank you for your message! We'll get back to you soon.
+                    Thank you for your message! We&apos;ll get back to you soon.
                   </div>
                 )}
                 

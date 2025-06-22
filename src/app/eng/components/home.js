@@ -296,7 +296,7 @@ export default function Home() {
             <div className="col-md-6">
               <div className="p-4 p-md-5">
                 <h2 className="mb-4">Get in Touch</h2>
-                <p className="mb-4">Have questions about our products or sustainability practices? We'd love to hear from you!</p>
+                <p className="mb-4">Have questions about our products or sustainability practices? We&apos;d love to hear from you!</p>
                 <form>
                   <div className="mb-3">
                     <input type="text" className="form-control" placeholder="Your Name" required />

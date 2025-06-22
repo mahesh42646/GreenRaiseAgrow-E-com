@@ -47,7 +47,7 @@ export default function CartPage() {
           <div className="text-center py-5">
             <i className="bi bi-cart-x fs-1 text-muted mb-3"></i>
             <h3>Your cart is empty</h3>
-            <p className="text-muted mb-4">Looks like you haven't added any products to your cart yet.</p>
+            <p className="text-muted mb-4">Looks like you haven&apos;t added any products to your cart yet.</p>
             <Link href="/shop" className="btn" style={{ backgroundColor: '#08A486', color: 'white' }}>
               Continue Shopping
             </Link>
@@ -200,7 +200,7 @@ export default function CartPage() {
                           Apply
                         </button>
                       </div>
-                      <small className="text-muted">Try "ECO20" for 20% off</small>
+                      <small className="text-muted">Try &quot;ECO20&quot; for 20% off</small>
                     </div>
                   )}
                   
