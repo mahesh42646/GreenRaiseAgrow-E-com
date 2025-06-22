@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import adminApi from '../../../services/adminApi';
 
 export default function AdminProducts() {
@@ -173,11 +174,13 @@ export default function AdminProducts() {
                     <tr key={product.productId}>
                       <td>
                         <div className="d-flex align-items-center">
-                          <img 
+                          <Image 
                             src={product.imageUrl || 'https://via.placeholder.com/50'} 
                             alt={product.productName} 
                             className="me-2" 
-                            style={{ width: '50px', height: '50px', objectFit: 'cover' }}
+                            width={50}
+                            height={50}
+                            style={{ objectFit: 'cover' }}
                           />
                           <div>
                             <div className="fw-bold">{product.productName}</div>

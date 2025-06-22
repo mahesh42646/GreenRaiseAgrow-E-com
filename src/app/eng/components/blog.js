@@ -3,7 +3,8 @@
 import { useState, useEffect } from "react";
 import { blogAPI } from "../../../services/api";
 import Link from "next/link";
-
+import Image from "next/image";
+  
 export default function Blog() {
   const [blogs, setBlogs] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -67,11 +68,13 @@ export default function Blog() {
                 <div key={blog.blogId} className="col-md-4 mb-4">
                   <div className="card h-100">
                     {blog.featuredImage && (
-                      <img 
+                      <Image 
                         src={blog.featuredImage} 
                         className="card-img-top" 
                         alt={blog.title}
                         style={{ height: "200px", objectFit: "cover" }}
+                        width={50}
+                        height={50}
                       />
                     )}
                     <div className="card-body">

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import Header from '../eng/components/header';
 import Footer from '../eng/components/footer';
 import { useAuth } from '../../context/AuthContext';
@@ -571,11 +572,13 @@ export default function AccountPage() {
                               <tr key={item.id}>
                                 <td>
                                   <div className="d-flex align-items-center">
-                                    <img 
+                                    <Image 
                                       src={item.image} 
                                       alt={item.name} 
                                       className="img-fluid rounded me-3" 
-                                      style={{ width: '50px', height: '50px' }} 
+                                      style={{ width: '50px', height: '50px' }}
+                                      width={50}
+                                      height={50}
                                     />
                                     <div>{item.name}</div>
                                   </div>

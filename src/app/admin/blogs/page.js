@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import adminApi from '../../../services/adminApi';
 
 export default function AdminBlogs() {
@@ -109,10 +110,12 @@ export default function AdminBlogs() {
               <div key={blog.id} className="card mb-3 border-0 shadow-sm">
                 <div className="row g-0">
                   <div className="col-md-3">
-                    <img 
+                    <Image 
                       src={blog.imageUrl || 'https://via.placeholder.com/300x200?text=Blog+Image'} 
                       className="img-fluid rounded-start" 
                       alt={blog.title}
+                      width={300}
+                      height={200}
                       style={{ height: '100%', objectFit: 'cover' }}
                     />
                   </div>

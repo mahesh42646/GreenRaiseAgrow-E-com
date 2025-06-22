@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import adminApi from '../../../../services/adminApi';
 
 export default function AddBlog() {
@@ -261,11 +262,13 @@ export default function AddBlog() {
               />
               {formData.featuredImage && (
                 <div className="mt-2">
-                  <img 
+                  <Image 
                     src={formData.featuredImage} 
                     alt="Blog preview" 
                     className="img-thumbnail" 
                     style={{ maxHeight: '200px' }}
+                    width={300}
+                    height={200}
                     onError={(e) => {
                       e.target.onerror = null;
                       e.target.src = 'https://via.placeholder.com/300x200?text=Invalid+Image+URL';

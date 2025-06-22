@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import Header from '../eng/components/header';
 import Footer from '../eng/components/footer';
@@ -563,7 +564,14 @@ export default function CheckoutPage() {
                   {cartItems.map(item => (
                     <div key={item.id} className="d-flex align-items-center mb-2">
                       <div className="flex-shrink-0" style={{ width: '50px', height: '50px' }}>
-                        <img src={item.image} alt={item.name} className="img-fluid rounded" />
+                        <Image 
+                          src={item.image} 
+                          alt={item.name} 
+                          className="rounded" 
+                          width={50}
+                          height={50}
+                          style={{ objectFit: 'cover' }}
+                        />
                       </div>
                       <div className="ms-2 flex-grow-1">
                         <p className="mb-0 small">{item.name}</p>

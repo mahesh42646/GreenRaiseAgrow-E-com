@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { productAPI } from "../../../services/api";
 import { useCart } from "../../../context/CartContext";
 import Link from "next/link";
-
+import Image from "next/image"; 
 export default function Shop() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -80,13 +80,15 @@ export default function Shop() {
                 <div key={product.productId} className="col-md-3 mb-4">
                   <div className="card h-100">
                     <Link href={`/product-details/${product.productId}`}>
-                      <img 
+                      <Image 
                         src={product.productImage && product.productImage.length > 0 
                           ? product.productImage[0] 
                           : "https://via.placeholder.com/300"}
                         className="card-img-top" 
                         alt={product.productName} 
                         style={{ height: "200px", objectFit: "cover" }}
+                        width={50}
+                        height={50}
                       />
                     </Link>
                     <div className="card-body d-flex flex-column">

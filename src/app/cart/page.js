@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import Header from '../eng/components/header';
 import Footer from '../eng/components/footer';
 import { useCart } from '../../context/CartContext';
@@ -72,11 +73,15 @@ export default function CartPage() {
                         {safeCartItems.map(item => (
                           <tr key={item.productId}>
                             <td style={{ width: '80px' }}>
-                              <img 
-                                src={item.image || 'https://via.placeholder.com/80'} 
-                                alt={item.name} 
-                                className="img-fluid rounded" 
-                              />
+                              <div style={{ position: 'relative', width: '80px', height: '80px' }}>
+                                <Image 
+                                  src={item.image || 'https://via.placeholder.com/80'} 
+                                  alt={item.name} 
+                                  fill
+                                  style={{ objectFit: 'cover' }}
+                                  className="rounded" 
+                                />
+                              </div>
                             </td>
                             <td>
                               <h6 className="mb-0">

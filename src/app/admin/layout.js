@@ -8,6 +8,7 @@ import BootstrapClient from './bootstrap-client';
 import './admin.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
+import Image from 'next/image';
 
 function AdminLayoutContent({ children }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -107,7 +108,7 @@ function AdminLayoutContent({ children }) {
         <hr />
         <div className="dropdown">
           <a href="#" className="d-flex align-items-center text-white text-decoration-none dropdown-toggle" id="dropdownUser1" data-bs-toggle="dropdown" aria-expanded="false">
-            <img src="https://github.com/mdo.png" alt="" width="32" height="32" className="rounded-circle me-2" />
+            <Image src="https://github.com/mdo.png" alt="" width={32} height={32} className="rounded-circle me-2" />
             {sidebarOpen && (
               <strong>Admin</strong>
             )}
@@ -150,7 +151,7 @@ function AdminLayoutContent({ children }) {
               </div>
               <div className="dropdown ms-3">
                 <a href="#" className="d-flex align-items-center text-dark text-decoration-none dropdown-toggle" id="dropdownUser3" data-bs-toggle="dropdown" aria-expanded="false">
-                  <img src="https://github.com/mdo.png" alt="" width="32" height="32" className="rounded-circle me-2" />
+                  <Image src="https://github.com/mdo.png" alt="" width={32} height={32} className="rounded-circle me-2" />
                   <strong>{admin?.name || 'Admin'}</strong>
                 </a>
                 <ul className="dropdown-menu dropdown-menu-end shadow" aria-labelledby="dropdownUser3">

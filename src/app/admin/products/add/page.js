@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import adminApi from '../../../../services/adminApi';
 
 export default function AddProduct() {
@@ -301,16 +302,19 @@ export default function AddProduct() {
               />
               {formData.productImage && (
                 <div className="mt-2">
-                  <img 
-                    src={formData.productImage} 
-                    alt="Product preview" 
-                    className="img-thumbnail" 
-                    style={{ maxHeight: '150px' }}
-                    onError={(e) => {
-                      e.target.onerror = null;
-                      e.target.src = 'https://via.placeholder.com/150?text=Invalid+Image+URL';
-                    }}
-                  />
+                  <div style={{ position: 'relative', width: '150px', height: '150px' }}>
+                    <Image 
+                      src={formData.productImage} 
+                      alt="Product preview" 
+                      className="img-thumbnail" 
+                      fill
+                      style={{ objectFit: 'contain' }}
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = 'https://via.placeholder.com/150?text=Invalid+Image+URL';
+                      }}
+                    />
+                  </div>
                 </div>
               )}
             </div>

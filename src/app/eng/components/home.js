@@ -1,5 +1,6 @@
 import React from "react";
 import Link from "next/link";
+import Image from "next/image";
 
 export default function Home() {
   // Sample data - in a real app, these would come from an API
@@ -46,20 +47,16 @@ export default function Home() {
           <div className="col-lg-8 position-relative">
             <div className="bg-light " style={{ minHeight: "400px" }}>
               <div className="row">
-                <div className=""
-                
-                >
+                <div className="">
                   <div className="position-relative p-5" style={{
                     backgroundImage: 'url(https://themes.pixelstrap.com/fastkart/assets/images/vegetable/banner/1.jpg)',
                     backgroundSize: 'cover',
                     backgroundPosition: 'center',
                     backgroundRepeat: 'no-repeat',
-                    // minHeight: '400px',
                     display: 'flex',
                     alignItems: 'center'
                   }}>
                     <div className="p" style={{
-                      // backgroundColor: 'rgba(255, 255, 255, 0.9)',
                       borderRadius: '10px',
                       maxWidth: '500px'
                     }}>
@@ -133,9 +130,6 @@ export default function Home() {
                         Shop Now <i className="bi bi-arrow-right ms-1"></i>
                       </Link>
                     </div>
-                    {/*   <div className="col-4">
-                      <img src="https://via.placeholder.com/150x150" className="img-fluid" alt="Healthy food" />
-                    </div> */}
                   </div>
                 </div>
               </div>
@@ -155,7 +149,14 @@ export default function Home() {
                     <div className="position-absolute top-0 start-0 p-3">
                       <span className="badge bg-danger">{category.discount}</span>
                     </div>
-                    <img src={category.image} className="card-img-top" alt={category.name} />
+                    <div style={{ position: 'relative', height: '200px' }}>
+                      <Image 
+                        src={category.image} 
+                        alt={category.name}
+                        fill
+                        style={{ objectFit: 'cover' }}
+                      />
+                    </div>
                     <div className="card-img-overlay d-flex flex-column justify-content-end">
                       <div className="bg-white bg-opacity-75 p-3 rounded-3">
                         <h5 className="card-title mb-1">{category.name}</h5>
@@ -183,7 +184,14 @@ export default function Home() {
               <div key={product.id} className="col-6 col-md-3">
                 <div className="card h-100 border-0 shadow-sm">
                   <div className="badge bg-success position-absolute top-0 end-0 m-2" style={{ backgroundColor: '#08A486' }}>Featured</div>
-                  <img src={product.image} className="card-img-top" alt={product.name} />
+                  <div style={{ position: 'relative', height: '200px' }}>
+                    <Image 
+                      src={product.image} 
+                      alt={product.name}
+                      fill
+                      style={{ objectFit: 'cover' }}
+                    />
+                  </div>
                   <div className="card-body">
                     <h5 className="card-title">{product.name}</h5>
                     <div className="d-flex justify-content-between align-items-center">
@@ -216,7 +224,14 @@ export default function Home() {
               <div key={product.id} className="col-6 col-md-3">
                 <div className="card h-100 border-0 shadow-sm">
                   <div className="badge bg-danger position-absolute top-0 end-0 m-2">Popular</div>
-                  <img src={product.image} className="card-img-top" alt={product.name} />
+                  <div style={{ position: 'relative', height: '200px' }}>
+                    <Image 
+                      src={product.image} 
+                      alt={product.name}
+                      fill
+                      style={{ objectFit: 'cover' }}
+                    />
+                  </div>
                   <div className="card-body">
                     <h5 className="card-title">{product.name}</h5>
                     <div className="d-flex justify-content-between align-items-center">
@@ -254,8 +269,16 @@ export default function Home() {
                     </div>
                     <p className="card-text mb-4">{testimonial.text}</p>
                     <div className="d-flex justify-content-center align-items-center">
-                      <img src={testimonial.avatar} className="rounded-circle me-3" width="50" height="50" alt={testimonial.name} />
-                      <div className="text-start">
+                      <div style={{ position: 'relative', width: '50px', height: '50px' }}>
+                        <Image 
+                          src={testimonial.avatar} 
+                          alt={testimonial.name}
+                          fill
+                          className="rounded-circle"
+                          style={{ objectFit: 'cover' }}
+                        />
+                      </div>
+                      <div className="text-start ms-3">
                         <h6 className="mb-0">{testimonial.name}</h6>
                         <small className="text-muted">{testimonial.role}</small>
                       </div>
@@ -289,7 +312,14 @@ export default function Home() {
               </div>
             </div>
             <div className="col-md-6 d-none d-md-block">
-              <img src="https://themes.pixelstrap.com/fastkart/assets/images/vegetable/banner/1.jpg" className="img-fluid" alt="Contact us" />
+              <div style={{ position: 'relative', height: '400px' }}>
+                <Image 
+                  src="https://themes.pixelstrap.com/fastkart/assets/images/vegetable/banner/1.jpg" 
+                  alt="Contact us"
+                  fill
+                  style={{ objectFit: 'cover' }}
+                />
+              </div>
             </div>
           </div>
         </section>

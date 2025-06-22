@@ -7,7 +7,7 @@ import Header from '../../eng/components/header';
 import Footer from '../../eng/components/footer';
 import { productAPI } from '../../../services/api';
 import { useCart } from '../../../context/CartContext';
-
+import Image from 'next/image'; 
 export default function ProductDetailsPage() {
   const params = useParams();
   const router = useRouter();
@@ -171,20 +171,24 @@ export default function ProductDetailsPage() {
           {/* Product Images */}
           <div className="col-md-6 mb-4 mb-md-0">
             <div className="card border-0">
-              <img 
+              <Image 
                 src={product.images[selectedImage]} 
                 alt={product.name} 
                 className="card-img-top img-fluid rounded"
+                width={50}
+                height={50}
               />
               <div className="row mt-3">
                 {product.images.slice(0, 4).map((image, index) => (
                   <div key={index} className="col-3">
-                    <img 
+                    <Image 
                       src={image} 
                       alt={`${product.name} - Image ${index + 1}`} 
                       className={`img-fluid rounded cursor-pointer ${selectedImage === index ? 'border border-primary' : ''}`}
                       style={{ cursor: 'pointer' }}
                       onClick={() => handleImageClick(index)}
+                      width={50}
+                      height={50}
                     />
                   </div>
                 ))}
@@ -471,12 +475,14 @@ export default function ProductDetailsPage() {
                 <div key={product.id} className="col">
                   <div className="card h-100 shadow-sm">
                     <Link href={`/product-details/${product.id}`} className="text-decoration-none">
-                      <img 
+                      <Image 
                         src={product.image} 
                         className="card-img-top" 
                         alt={product.name} 
                         style={{ height: "200px", objectFit: "cover" }}
-                      />
+                        width={50}
+                        height={50}
+                        />
                     </Link>
                     <div className="card-body">
                       <Link href={`/product-details/${product.id}`} className="text-decoration-none text-dark">
