@@ -30,8 +30,8 @@ export default function Header() {
     const navLinks = [
         { name: 'Home', href: '/', dropdown: true },
         { name: 'Shop', href: '/shop', dropdown: true },
-        { name: 'Product', href: '/product', dropdown: true },
         { name: 'Blog', href: '/blog', dropdown: true },
+        { name: 'Cart', href: '/cart', dropdown: true },
         // { name: 'Pages', href: '/pages', dropdown: true, badge: 'New' },
     ];
 
