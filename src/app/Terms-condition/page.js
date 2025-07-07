@@ -31,19 +31,19 @@ export default function TermsAndConditions() {
               <div className="mb-4">
                 <h2 className="h4 fw-bold mb-3" style={{ color: '#000' }}>1. Acceptance of Terms</h2>
                 <p className="text-muted">
-                  By accessing and using GreenRaise ("we," "our," or "us"), you accept and agree to be bound by the terms and provision of this agreement. If you do not agree to abide by the above, please do not use this service.
+                  By accessing and using GreenRaise (&rdquo;we,&rdquo; &rdquo;our,&rdquo; or &rdquo;us&rdquo;), you accept and agree to be bound by the terms and provision of this agreement. If you do not agree to abide by the above, please do not use this service.
                 </p>
               </div>
 
               <div className="mb-4">
                 <h2 className="h4 fw-bold mb-3" style={{ color: '#000' }}>2. Use License</h2>
                 <p className="text-muted mb-3">
-                  Permission is granted to temporarily download one copy of the materials (information or software) on GreenRaise's website for personal, non-commercial transitory viewing only. This is the grant of a license, not a transfer of title, and under this license you may not:
+                  Permission is granted to temporarily download one copy of the materials (information or software) on GreenRaise&apos;s website for personal, non-commercial transitory viewing only. This is the grant of a license, not a transfer of title, and under this license you may not:
                 </p>
                 <ul className="text-muted">
                   <li>Modify or copy the materials</li>
                   <li>Use the materials for any commercial purpose or for any public display</li>
-                  <li>Attempt to reverse engineer any software contained on GreenRaise's website</li>
+                  <li>Attempt to reverse engineer any software contained on GreenRaise&apos;s website</li>
                   <li>Remove any copyright or other proprietary notations from the materials</li>
                 </ul>
               </div>
@@ -111,7 +111,7 @@ export default function TermsAndConditions() {
               <div className="mb-4">
                 <h2 className="h4 fw-bold mb-3" style={{ color: '#000' }}>9. Limitation of Liability</h2>
                 <p className="text-muted">
-                  In no event shall GreenRaise or its suppliers be liable for any damages (including, without limitation, damages for loss of data or profit, or due to business interruption) arising out of the use or inability to use the materials on GreenRaise's website.
+                            In no event shall GreenRaise or its suppliers be liable for any damages (including, without limitation, damages for loss of data or profit, or due to business interruption) arising out of the use or inability to use the materials on GreenRaise&apos;s website.
                 </p>
               </div>
 
@@ -156,7 +156,7 @@ export default function TermsAndConditions() {
                   Questions About Our Terms?
                 </h5>
                 <p className="text-muted mb-3">
-                  We're here to help clarify any part of our terms and conditions.
+                  We&apos;re here to help clarify any part of our terms and conditions.
                 </p>
                 <a 
                   href="/contact" 

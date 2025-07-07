@@ -92,7 +92,7 @@ export default function ShippingDeliveryPolicies() {
                   <h2 className="h3 fw-bold text-dark mb-4">Overview</h2>
                   <div className="text-muted">
                     <p className="mb-3">
-                      Welcome to GreenRaise's comprehensive shipping and delivery information. We understand that 
+                      Welcome to GreenRaise&apos;s comprehensive shipping and delivery information. We understand that 
                       reliable shipping is crucial for your eco-friendly shopping experience. Our commitment extends 
                       beyond just delivering products - we ensure every package reflects our environmental values.
                     </p>
@@ -186,7 +186,7 @@ export default function ShippingDeliveryPolicies() {
                     <div className="alert alert-info mt-3" style={{ backgroundColor: '#e8f5e8', borderColor: '#08A486', color: '#08A486' }}>
                       <i className="bi bi-info-circle me-2"></i>
                       <strong>Important:</strong> Delivery times may vary during peak seasons, holidays, or extreme weather conditions. 
-                      We'll send you notifications if any delays occur.
+                      We&apos;ll send you notifications if any delays occur.
                     </div>
                   </div>
                 </section>
@@ -250,7 +250,7 @@ export default function ShippingDeliveryPolicies() {
                 <section id="order-tracking" className="mb-5">
                   <h2 className="h3 fw-bold text-dark mb-4">Order Tracking</h2>
                   <div className="text-muted">
-                    <p className="mb-3">Stay informed about your eco-friendly order's journey:</p>
+                    <p className="mb-3">Stay informed about your eco-friendly order&apos;s journey:</p>
                     <div className="row">
                       <div className="col-md-6 mb-3">
                         <div className="d-flex align-items-start">
@@ -322,7 +322,7 @@ export default function ShippingDeliveryPolicies() {
                     <div className="alert alert-warning" style={{ backgroundColor: '#fff3cd', borderColor: '#FFA53B', color: '#856404' }}>
                       <i className="bi bi-exclamation-triangle me-2"></i>
                       <strong>Shipping Restrictions:</strong> Certain products may have regional restrictions due to local regulations 
-                      or carrier limitations. We'll inform you during checkout if any restrictions apply.
+                      or carrier limitations. We&apos;ll inform you during checkout if any restrictions apply.
                     </div>
                   </div>
                 </section>
@@ -390,7 +390,7 @@ export default function ShippingDeliveryPolicies() {
                     <div className="alert alert-success" style={{ backgroundColor: '#d1e7dd', borderColor: '#08A486', color: '#0f5132' }}>
                       <i className="bi bi-leaf me-2"></i>
                       <strong>Environmental Impact:</strong> Every shipment contributes to our tree-planting initiative. 
-                      We've planted over 50,000 trees through our shipping program to date.
+                      We&apos;ve planted over 50,000 trees through our shipping program to date.
                     </div>
                   </div>
                 </section>
@@ -417,7 +417,7 @@ export default function ShippingDeliveryPolicies() {
                           <li>Organic products may require special permits</li>
                           <li>Battery-powered items have specific shipping requirements</li>
                           <li>Liquid products subject to volume restrictions</li>
-                          <li>We'll notify you of any restrictions during checkout</li>
+                            <li>We&apos;ll notify you of any restrictions during checkout</li>
                           <li>Alternative products suggested when restrictions apply</li>
                         </ul>
                       </div>

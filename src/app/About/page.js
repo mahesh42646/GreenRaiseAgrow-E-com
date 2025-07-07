@@ -44,7 +44,7 @@ export default function AboutPage() {
     {
       id: 1,
       title: "Environmental Stewardship",
-      description: "We're committed to protecting our planet through sustainable practices and eco-friendly products.",
+      description: "We&apos;re committed to protecting our planet through sustainable practices and eco-friendly products.",
       icon: "bi-tree-fill"
     },
     {
@@ -162,7 +162,7 @@ export default function AboutPage() {
                   with eco-friendly products and responsible brands.
                 </p>
                 <p className="mb-4">
-                  We understand that making sustainable choices can sometimes feel overwhelming. That's why we've 
+                  We understand that making sustainable choices can sometimes feel overwhelming. That&apos;s why we&apos;ve 
                   curated a carefully selected range of products that meet our strict environmental standards while 
                   maintaining the quality and functionality you expect.
                 </p>
@@ -284,7 +284,7 @@ export default function AboutPage() {
                 <p className="mb-4">
                   We envision a world where sustainable living is the norm, not the exception. 
                   A future where every household has access to eco-friendly alternatives that 
-                  don't compromise on quality, style, or convenience.
+                  don&apos;t compromise on quality, style, or convenience.
                 </p>
                 <div className="row">
                   <div className="col-6">

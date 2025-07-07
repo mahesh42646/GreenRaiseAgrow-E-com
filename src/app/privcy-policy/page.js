@@ -292,7 +292,7 @@ export default function PrivacyPolicy() {
 
                 {/* Children's Privacy Section */}
                 <section id="children" className="mb-5">
-                  <h2 className="h3 fw-bold text-dark mb-4">Children's Privacy</h2>
+                  <h2 className="h3 fw-bold text-dark mb-4">Children&apos;s Privacy</h2>
                   <div className="text-muted">
                     <p className="mb-3">
                       Our website is not intended for children under the age of 13. 
