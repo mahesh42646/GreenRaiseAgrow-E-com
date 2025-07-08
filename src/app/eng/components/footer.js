@@ -61,9 +61,9 @@ export default function Footer() {
           <div className="col-md-2 mb-3">
             <h6 className="fw-bold" style={{ color: '#FFA53B' }}>Customer Service</h6>
             <ul className="list-unstyled">
-              <li onClick={() => handleNavigate('/terms-conditions')} className="text-white text-decoration-none" style={{ cursor: 'pointer' }}>Terms & Condition</li>
-              <li onClick={() => handleNavigate('/shipping-delivery-policy')} className="text-white text-decoration-none" style={{ cursor: 'pointer' }}>Shipping Info</li>
-              <li onClick={() => handleNavigate('/refund-payment-policy')} className="text-white text-decoration-none" style={{ cursor: 'pointer' }}>Refund Policy</li>
+              <li onClick={() => handleNavigate('/terms-condition')} className="text-white text-decoration-none" style={{ cursor: 'pointer' }}>Terms & Condition</li>
+              <li onClick={() => handleNavigate('/shipping-delivery-policys')} className="text-white text-decoration-none" style={{ cursor: 'pointer' }}>Shipping Info</li>
+              <li onClick={() => handleNavigate('/refund-payment-policys')} className="text-white text-decoration-none" style={{ cursor: 'pointer' }}>Refund Policy</li>
               <li onClick={() => handleNavigate('/privacy-policy')} className="text-white text-decoration-none" style={{ cursor: 'pointer' }}>Privacy Policy</li>
             </ul>
           </div>
@@ -91,10 +91,7 @@ export default function Footer() {
                 </div>
               </div>
             </div>
-            {/* <div className="mb-2 d-flex align-items-center">
-              <i className="bi bi-envelope-fill me-2" style={{ color: '#FFA53B', fontSize: '1.3rem' }}></i>
-              <a href="mailto:info@greenraise.com" className="text-white text-decoration-none fw-bold">Send Email</a>
-            </div> */}
+           
             <div className="mb-2 d-flex align-items-center">
               <i className="bi bi-telephone-fill me-2" style={{ color: '#FFA53B', fontSize: '1.3rem' }}></i>
               <span className="fw-bold">08048988846</span>
