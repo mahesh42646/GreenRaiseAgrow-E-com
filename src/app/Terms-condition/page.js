@@ -129,43 +129,6 @@ export default function TermsAndConditions() {
                 </p>
               </div>
 
-              <div className="mb-4">
-                <h2 className="h4 fw-bold mb-3" style={{ color: '#000' }}>12. Contact Information</h2>
-                <p className="text-muted mb-2">
-                  If you have any questions about these Terms and Conditions, please contact us:
-                </p>
-                <div className="text-muted">
-                  <p className="mb-1">
-                    <i className="bi bi-envelope me-2"></i>
-                    Email: legal@greenraise.com
-                  </p>
-                  <p className="mb-1">
-                    <i className="bi bi-telephone me-2"></i>
-                    Phone: +1 (555) 123-4567
-                  </p>
-                  <p className="mb-1">
-                    <i className="bi bi-geo-alt me-2"></i>
-                    Address: 123 Green Street, Eco City, EC 12345
-                  </p>
-                </div>
-              </div>
-
-              {/* Call to Action */}
-              <div className="text-center mt-5 p-4 bg-light rounded">
-                <h5 className="fw-bold mb-3" style={{ color: '#000' }}>
-                  Questions About Our Terms?
-                </h5>
-                <p className="text-muted mb-3">
-                  We&apos;re here to help clarify any part of our terms and conditions.
-                </p>
-                <a 
-                  href="/contact" 
-                  className="btn fw-bold px-4 py-2"
-                  style={{ backgroundColor: '#000', color: 'white' }}
-                >
-                  Contact Us
-                </a>
-              </div>
             </div>
           </div>
         </div>
