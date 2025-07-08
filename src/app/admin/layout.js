@@ -104,67 +104,25 @@ function AdminLayoutContent({ children }) {
               {sidebarOpen && 'Tickets'}
             </Link>
           </li>
+          <li>
+            <Link href="/admin/coupan" className={`nav-link text-white ${pathname.includes('/coupan') ? 'active' : ''}`}>
+              <i className="bi bi-cash-coin me-2"></i>
+              {sidebarOpen && 'Coupan'}
+            </Link>
+          </li>
+
         </ul>
         <hr />
         <div className="dropdown">
-          <a href="#" className="d-flex align-items-center text-white text-decoration-none dropdown-toggle" id="dropdownUser1" data-bs-toggle="dropdown" aria-expanded="false">
-            <Image src="https://github.com/mdo.png" alt="" width={32} height={32} className="rounded-circle me-2" />
-            {sidebarOpen && (
-              <strong>Admin</strong>
-            )}
-          </a>
-          <ul className="dropdown-menu dropdown-menu-dark text-small shadow" aria-labelledby="dropdownUser1">
-            <li><a className="dropdown-item" href="#">Settings</a></li>
-            <li><a className="dropdown-item" href="#">Profile</a></li>
-            <li><hr className="dropdown-divider" /></li>
-            <li><button className="dropdown-item" onClick={logout}>Sign out</button></li>
-          </ul>
+          <button className="btn btn-outline-light border-0 btn-sm " onClick={logout}>
+            <i className="bi bi-box-arrow-right me-2"></i>
+            {sidebarOpen && 'Logout'}
+          </button>
         </div>
       </div>
 
       {/* Main content */}
       <div className="flex-grow-1" style={{ marginLeft: sidebarOpen ? '280px' : '80px', transition: 'margin-left 0.3s ease' }}>
-        {/* Top navbar */}
-        <nav className="navbar navbar-light bg-light border-bottom">
-          <div className="container-fluid">
-            <button 
-              className="navbar-toggler d-md-none" 
-              type="button" 
-              onClick={toggleSidebar}
-            >
-              <span className="navbar-toggler-icon"></span>
-            </button>
-            <div className="d-flex">
-              <div className="dropdown">
-                <a href="#" className="d-flex align-items-center text-dark text-decoration-none dropdown-toggle" id="dropdownUser2" data-bs-toggle="dropdown" aria-expanded="false">
-                  <i className="bi bi-bell me-2"></i>
-                  <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style={{ fontSize: '0.5rem' }}>
-                    3
-                  </span>
-                </a>
-                <ul className="dropdown-menu dropdown-menu-end shadow" aria-labelledby="dropdownUser2" style={{ minWidth: '300px' }}>
-                  <li><h6 className="dropdown-header">Notifications</h6></li>
-                  <li><a className="dropdown-item" href="#">New order received</a></li>
-                  <li><a className="dropdown-item" href="#">Product out of stock</a></li>
-                  <li><a className="dropdown-item" href="#">New user registered</a></li>
-                </ul>
-              </div>
-              <div className="dropdown ms-3">
-                <a href="#" className="d-flex align-items-center text-dark text-decoration-none dropdown-toggle" id="dropdownUser3" data-bs-toggle="dropdown" aria-expanded="false">
-                  <Image src="https://github.com/mdo.png" alt="" width={32} height={32} className="rounded-circle me-2" />
-                  <strong>{admin?.name || 'Admin'}</strong>
-                </a>
-                <ul className="dropdown-menu dropdown-menu-end shadow" aria-labelledby="dropdownUser3">
-                  <li><a className="dropdown-item" href="#">Settings</a></li>
-                  <li><a className="dropdown-item" href="#">Profile</a></li>
-                  <li><hr className="dropdown-divider" /></li>
-                  <li><button className="dropdown-item" onClick={logout}>Sign out</button></li>
-                </ul>
-              </div>
-            </div>
-          </div>
-        </nav>
-
         {/* Page content */}
         <main className="p-4">
           {children}

@@ -89,6 +89,7 @@ export default function Shop() {
                         style={{ height: "200px", objectFit: "cover" }}
                         width={50}
                         height={50}
+                        unoptimized={true}
                       />
                     </Link>
                     <div className="card-body d-flex flex-column">

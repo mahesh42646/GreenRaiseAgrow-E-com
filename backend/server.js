@@ -25,6 +25,10 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
+// Serve static files from uploads directory
+app.use('/api/ecom/products/uploads', express.static('uploads'));
+app.use('/api/products/uploads', express.static('uploads'));
+
 // Socket.io connection
 io.on('connection', (socket) => {
   console.log(`New client connected: ${socket.id}`);

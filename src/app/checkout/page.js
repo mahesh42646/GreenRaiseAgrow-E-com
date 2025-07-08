@@ -571,6 +571,7 @@ export default function CheckoutPage() {
                           width={50}
                           height={50}
                           style={{ objectFit: 'cover' }}
+                          unoptimized={true}
                         />
                       </div>
                       <div className="ms-2 flex-grow-1">

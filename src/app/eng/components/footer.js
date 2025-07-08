@@ -1,4 +1,25 @@
+'use client';
+import { useRouter } from 'next/navigation';
+
 export default function Footer() {
+  const router = useRouter();
+
+  const handleNavigate = (path) => {
+    router.push(path);
+  };
+
+  const handleSocialClick = (platform) => {
+    const socialLinks = {
+      facebook: 'https://facebook.com/greenraise',
+      twitter: 'https://twitter.com/greenraise',
+      instagram: 'https://instagram.com/greenraise',
+    };
+
+    if (socialLinks[platform]) {
+      window.open(socialLinks[platform], '_blank', 'noopener,noreferrer');
+    }
+  };
+
   return (
     <footer className="bg-dark text-white py-4 mt-5">
       <div className="container">
@@ -6,20 +27,33 @@ export default function Footer() {
           {/* Company Info */}
           <div className="col-md-4 mb-3">
             <h5 className="fw-bold" style={{ color: '#08A486' }}>GreenRaise</h5>
-            <p className="text-muted">
+            <p className="text-white">
               Your trusted source for sustainable and eco-friendly products. 
               Making the world greener, one purchase at a time.
             </p>
+            <div className="mt-3">
+              <span className="me-2">Share:</span>
+              <a href="https://facebook.com/greenraise" target="_blank" rel="noopener noreferrer" className="d-inline-block me-2" style={{ border: '1px solid #fff', borderRadius: '50%', width: 32, height: 32, textAlign: 'center', lineHeight: '32px', color: '#fff', fontSize: '1.2rem' }}>
+                <i className="bi bi-facebook"></i>
+              </a>
+              <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" className="d-inline-block me-2" style={{ border: '1px solid #fff', borderRadius: '50%', width: 32, height: 32, textAlign: 'center', lineHeight: '32px', color: '#fff', fontSize: '1.2rem' }}>
+                <i className="bi bi-linkedin"></i>
+              </a>
+              <a href="https://twitter.com/greenraise" target="_blank" rel="noopener noreferrer" className="d-inline-block" style={{ border: '1px solid #fff', borderRadius: '50%', width: 32, height: 32, textAlign: 'center', lineHeight: '32px', color: '#fff', fontSize: '1.2rem' }}>
+                <i className="bi bi-twitter-x"></i>
+              </a>
+            </div>
           </div>
 
           {/* Quick Links */}
           <div className="col-md-2 mb-3">
             <h6 className="fw-bold" style={{ color: '#FFA53B' }}>Quick Links</h6>
             <ul className="list-unstyled">
-              <li><a href="/products" className="text-muted text-decoration-none">Products</a></li>
-              <li><a href="/categories" className="text-muted text-decoration-none">Categories</a></li>
-              <li><a href="/about" className="text-muted text-decoration-none">About Us</a></li>
-              <li><a href="/contact" className="text-muted text-decoration-none">Contact</a></li>
+              <li onClick={() => handleNavigate('/')} className="text-white text-decoration-none" style={{ cursor: 'pointer' }}>Home</li>
+              <li onClick={() => handleNavigate('/shop')} className="text-white text-decoration-none" style={{ cursor: 'pointer' }}>Shop</li>
+              <li onClick={() => handleNavigate('/blog')} className="text-white text-decoration-none" style={{ cursor: 'pointer' }}>Blog</li>
+              <li onClick={() => handleNavigate('/cart')} className="text-white text-decoration-none" style={{ cursor: 'pointer' }}>Cart</li>
+              <li onClick={() => handleNavigate('/about')} className="text-white text-decoration-none" style={{ cursor: 'pointer' }}>About</li>
             </ul>
           </div>
 
@@ -27,55 +61,59 @@ export default function Footer() {
           <div className="col-md-2 mb-3">
             <h6 className="fw-bold" style={{ color: '#FFA53B' }}>Customer Service</h6>
             <ul className="list-unstyled">
-              <li><a href="/help" className="text-muted text-decoration-none">Help Center</a></li>
-              <li><a href="/shipping" className="text-muted text-decoration-none">Shipping Info</a></li>
-              <li><a href="/returns" className="text-muted text-decoration-none">Returns</a></li>
-              <li><a href="/faq" className="text-muted text-decoration-none">FAQ</a></li>
+              <li onClick={() => handleNavigate('/terms-conditions')} className="text-white text-decoration-none" style={{ cursor: 'pointer' }}>Terms & Condition</li>
+              <li onClick={() => handleNavigate('/shipping-delivery-policy')} className="text-white text-decoration-none" style={{ cursor: 'pointer' }}>Shipping Info</li>
+              <li onClick={() => handleNavigate('/refund-payment-policy')} className="text-white text-decoration-none" style={{ cursor: 'pointer' }}>Refund Policy</li>
+              <li onClick={() => handleNavigate('/privacy-policy')} className="text-white text-decoration-none" style={{ cursor: 'pointer' }}>Privacy Policy</li>
             </ul>
           </div>
 
           {/* Contact Info */}
           <div className="col-md-4 mb-3">
-            <h6 className="fw-bold" style={{ color: '#FFA53B' }}>Contact Us</h6>
-            <p className="text-muted mb-1">
-              <i className="bi bi-geo-alt"></i> 123 Green Street, Eco City
-            </p>
-            <p className="text-muted mb-1">
-              <i className="bi bi-telephone"></i> +1 (555) 123-4567
-            </p>
-            <p className="text-muted mb-1">
-              <i className="bi bi-envelope"></i> info@greenraise.com
-            </p>
-            
-            {/* Social Media */}
-            <div className="mt-3">
-              <a href="#" className="text-muted me-3" style={{ fontSize: '1.5rem' }}>
-                <i className="bi bi-facebook"></i>
-              </a>
-              <a href="#" className="text-muted me-3" style={{ fontSize: '1.5rem' }}>
-                <i className="bi bi-twitter"></i>
-              </a>
-              <a href="#" className="text-muted me-3" style={{ fontSize: '1.5rem' }}>
-                <i className="bi bi-instagram"></i>
-              </a>
+            <h6 className="fw-bold" style={{ color: '#FFA53B', fontSize: '1rem' }}>Contact Us</h6>
+            <div className="mb-2 d-flex align-items-start">
+              <i className="bi bi-geo-alt-fill me-2" style={{ color: '#FFA53B', fontSize: '1.5rem' }}></i>
+              <div>
+                <div>Chandrakant Jadhav (Partner)</div>
+                <div className="fw-bold">Green Rise Agro Industries</div>
+                <div>Survey No. 13, Office No. 6, Shivanand Complex, Satavwadi</div>
+                <div>Hadapsar, Pune - 411028, Maharashtra, India</div>
+                <div>
+                  <a
+                    href="https://maps.google.com/?q=Survey No. 13, Office No. 6, Shivanand Complex, Satavwadi, Hadapsar, Pune - 411028, Maharashtra, India"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="fw-bold text-white text-decoration-none"
+                    style={{ display: 'inline-flex', alignItems: 'center', marginTop: 4 }}
+                  >
+                    Get Directions <span className="ms-1" style={{ fontSize: '1.2em' }}>➔</span>
+                  </a>
+                </div>
+              </div>
             </div>
+            {/* <div className="mb-2 d-flex align-items-center">
+              <i className="bi bi-envelope-fill me-2" style={{ color: '#FFA53B', fontSize: '1.3rem' }}></i>
+              <a href="mailto:info@greenraise.com" className="text-white text-decoration-none fw-bold">Send Email</a>
+            </div> */}
+            <div className="mb-2 d-flex align-items-center">
+              <i className="bi bi-telephone-fill me-2" style={{ color: '#FFA53B', fontSize: '1.3rem' }}></i>
+              <span className="fw-bold">08048988846</span>
+            </div>
+           
           </div>
         </div>
 
         {/* Bottom Footer */}
         <hr className="my-3" />
-        <div className="row align-items-center">
-          <div className="col-md-6">
-            <p className="text-muted mb-0">
+        <div className="d-flex justify-content-center align-items-center">
+          <div className="">
+            <p className="text-white mb-0">
               © 2024 GreenRaise. All rights reserved.
             </p>
           </div>
-          <div className="col-md-6 text-md-end">
-            <a href="/privacy" className="text-muted text-decoration-none me-3">Privacy Policy</a>
-            <a href="/terms" className="text-muted text-decoration-none">Terms of Service</a>
-          </div>
+         
         </div>
       </div>
     </footer>
   );
-} 
+}

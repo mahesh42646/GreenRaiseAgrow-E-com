@@ -80,6 +80,7 @@ export default function CartPage() {
                                   fill
                                   style={{ objectFit: 'cover' }}
                                   className="rounded" 
+                                  unoptimized={true}
                                 />
                               </div>
                             </td>

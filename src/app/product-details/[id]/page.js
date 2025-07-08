@@ -177,6 +177,7 @@ export default function ProductDetailsPage() {
                 className="card-img-top img-fluid rounded"
                 width={50}
                 height={50}
+                unoptimized={true}
               />
               <div className="row mt-3">
                 {product.images.slice(0, 4).map((image, index) => (
@@ -189,6 +190,7 @@ export default function ProductDetailsPage() {
                       onClick={() => handleImageClick(index)}
                       width={50}
                       height={50}
+                      unoptimized={true}
                     />
                   </div>
                 ))}

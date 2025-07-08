@@ -59,8 +59,8 @@ export default function AdminProducts() {
         bValue = b.category;
         break;
       case 'stock':
-        aValue = a.stock || 0;
-        bValue = b.stock || 0;
+        aValue = a.quantityStockLeft || 0;
+        bValue = b.quantityStockLeft || 0;
         break;
       default:
         aValue = a.productName;
@@ -173,38 +173,46 @@ export default function AdminProducts() {
                   currentItems.map((product) => (
                     <tr key={product.productId}>
                       <td>
-                        <div className="d-flex align-items-center">
+                        <div className="d-flex align-items-center  ">
                           <Image 
-                            src={product.imageUrl || 'https://via.placeholder.com/50'} 
+                            src={product.productImage && product.productImage.length > 0 ? product.productImage[0] : 'https://via.placeholder.com/50'} 
                             alt={product.productName} 
-                            className="me-2" 
+                            className="me-2 border rounded-5" 
                             width={50}
                             height={50}
                             style={{ objectFit: 'cover' }}
+                            unoptimized={true}
                           />
                           <div>
                             <div className="fw-bold">{product.productName}</div>
-                            <small className="text-muted">ID: {product.productId}</small>
+                            {/* <small className="text-muted">ID: {product.productId}</small> */}
                           </div>
                         </div>
                       </td>
-                      <td>{product.category}</td>
+                      <td className="pt-4">{product.productCategory}</td>
                       <td>
-                        <div className="fw-bold">${product.actualPrice.toFixed(2)}</div>
-                        {product.originalPrice > product.actualPrice && (
-                          <small className="text-decoration-line-through text-muted">
-                            ${product.originalPrice.toFixed(2)}
-                          </small>
+                        {product.discountedPrice && product.discountedPrice < product.actualPrice ? (
+                          <div>
+                            <div className="fw-bold fs-6 pt-3"> ₹{(product.actualPrice - product.discountedPrice).toFixed(2)}</div>
+                            {/* <div className="text-decoration-line-through text-muted small">
+                              ₹{product.actualPrice.toFixed(2)}
+                            </div> */}
+                            {/* <div className="text-danger small ">
+                            ₹{product.discountedPrice.toFixed(2)}off
+                            </div> */}
+                          </div>
+                        ) : (
+                          <div className="fw-bold">₹{product.actualPrice.toFixed(2)}</div>
                         )}
                       </td>
                       <td>
-                        <span className={`badge ${product.stock > 10 ? 'bg-success' : product.stock > 0 ? 'bg-warning' : 'bg-danger'}`}>
-                          {product.stock > 0 ? product.stock : 'Out of stock'}
+                        <span className={`badge ${product.stockStatus === 'In Stock' ? 'bg-success' : 'bg-danger'} mt-3`}>
+                          {product.stockStatus === 'In Stock' ? `${product.quantityStockLeft} in stock` : 'Out of stock'}
                         </span>
                       </td>
                       <td>
-                        <div className="btn-group">
-                          <Link href={`/admin/products/edit/${product.productId}`} className="btn btn-sm btn-outline-primary">
+                        <div className="btn-group mt-2">
+                          <Link href={`/admin/products/add/${product.productId}`} className="btn btn-sm btn-outline-primary">
                             <i className="bi bi-pencil"></i>
                           </Link>
                           <button 
@@ -268,3 +276,8 @@ export default function AdminProducts() {
     </div>
   );
 } 
+
+
+
+
+

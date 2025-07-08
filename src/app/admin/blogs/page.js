@@ -111,12 +111,13 @@ export default function AdminBlogs() {
                 <div className="row g-0">
                   <div className="col-md-3">
                     <Image 
-                      src={blog.imageUrl || 'https://via.placeholder.com/300x200?text=Blog+Image'} 
+                      src={blog.featuredImage || 'https://via.placeholder.com/300x200?text=Blog+Image'} 
                       className="img-fluid rounded-start" 
                       alt={blog.title}
                       width={300}
                       height={200}
                       style={{ height: '100%', objectFit: 'cover' }}
+                      unoptimized={true}
                     />
                   </div>
                   <div className="col-md-9">

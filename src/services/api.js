@@ -1,4 +1,4 @@
-// API service for connecting to the backend
+ // API service for connecting to the backend
 
 const API_URL = 'http://localhost:2999/api/ecom';
 

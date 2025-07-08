@@ -10,6 +10,8 @@ export default function AddProduct() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [imagePreview, setImagePreview] = useState('');
+  const [uploadedFile, setUploadedFile] = useState(null);
   
   const [formData, setFormData] = useState({
     productName: '',
@@ -35,6 +37,31 @@ export default function AddProduct() {
       ...formData,
       [name]: type === 'checkbox' ? checked : value
     });
+    
+    // Update image preview when URL changes
+    if (name === 'productImage') {
+      setImagePreview(value);
+    }
+  };
+
+  const handleFileUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setUploadedFile(file);
+      
+      // Create preview URL for uploaded file
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setImagePreview(e.target.result);
+      };
+      reader.readAsDataURL(file);
+      
+      // Clear URL input when file is uploaded
+      setFormData(prev => ({
+        ...prev,
+        productImage: ''
+      }));
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -44,50 +71,73 @@ export default function AddProduct() {
     setIsSubmitting(true);
 
     try {
-      // Convert prices and quantities to numbers
-      const productData = {
-        ...formData,
-        actualPrice: parseFloat(formData.actualPrice),
-        discountedPrice: formData.discountedPrice ? parseFloat(formData.discountedPrice) : null,
-        quantity: parseInt(formData.quantity),
-        quantityStockLeft: parseInt(formData.quantityStockLeft),
-        productImage: formData.productImage ? [formData.productImage] : [],
-        productTags: formData.productTags.split(',').map(tag => tag.trim()).filter(tag => tag)
-      };
-
-      console.log('Submitting product data:', productData);
-      const response = await adminApi.products.createProduct(productData);
+      let finalImageUrl = formData.productImage;
       
-      setSuccess('Product created successfully!');
-      setFormData({
-        productName: '',
-        shortDescription: '',
-        longDescription: '',
-        productCategory: '',
-        productSubcategory: '',
-        actualPrice: '',
-        discountedPrice: '',
-        quantity: '',
-        productImage: '',
-        skuNo: '',
-        stockStatus: 'In Stock',
-        quantityStockLeft: '',
-        productTags: '',
-        adminEmail: 'admin@greenraise.com',
-        isBestSeller: false
-      });
-      
-      // Redirect after a short delay
-      setTimeout(() => {
-        router.push('/admin/products');
-      }, 1500);
-      
+      // If file is uploaded, convert to base64 or upload to server
+      if (uploadedFile) {
+        // For now, we'll convert to base64 (in production, upload to cloud storage)
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+          const base64Image = e.target.result;
+          finalImageUrl = base64Image;
+          
+          // Submit with base64 image
+          await submitProduct(finalImageUrl);
+        };
+        reader.readAsDataURL(uploadedFile);
+      } else {
+        // Submit with URL
+        await submitProduct(finalImageUrl);
+      }
     } catch (err) {
       console.error('Error creating product:', err);
       setError(err.message || 'Failed to create product');
-    } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const submitProduct = async (imageUrl) => {
+    // Convert prices and quantities to numbers
+    const productData = {
+      ...formData,
+      actualPrice: parseFloat(formData.actualPrice),
+      discountedPrice: formData.discountedPrice ? parseFloat(formData.discountedPrice) : null,
+      quantity: parseInt(formData.quantity),
+      quantityStockLeft: parseInt(formData.quantityStockLeft),
+      productImage: imageUrl ? [imageUrl] : [],
+      productTags: formData.productTags.split(',').map(tag => tag.trim()).filter(tag => tag)
+    };
+
+    console.log('Submitting product data:', productData);
+    const response = await adminApi.products.createProduct(productData);
+    
+    setSuccess('Product created successfully!');
+    setFormData({
+      productName: '',
+      shortDescription: '',
+      longDescription: '',
+      productCategory: '',
+      productSubcategory: '',
+      actualPrice: '',
+      discountedPrice: '',
+      quantity: '',
+      productImage: '',
+      skuNo: '',
+      stockStatus: 'In Stock',
+      quantityStockLeft: '',
+      productTags: '',
+      adminEmail: 'admin@greenraise.com',
+      isBestSeller: false
+    });
+    setImagePreview('');
+    setUploadedFile(null);
+    
+    // Redirect after a short delay
+    setTimeout(() => {
+      router.push('/admin/products');
+    }, 1500);
+    
+    setIsSubmitting(false);
   };
 
   return (
@@ -206,7 +256,7 @@ export default function AddProduct() {
             
             <div className="row mb-3">
               <div className="col-md-3">
-                <label htmlFor="actualPrice" className="form-label">Price ($)*</label>
+                <label htmlFor="actualPrice" className="form-label">Price (₹)*</label>
                 <input
                   type="number"
                   className="form-control"
@@ -220,7 +270,7 @@ export default function AddProduct() {
                 />
               </div>
               <div className="col-md-3">
-                <label htmlFor="discountedPrice" className="form-label">Discounted Price ($)</label>
+                <label htmlFor="discountedPrice" className="form-label">Discounted Price (₹)</label>
                 <input
                   type="number"
                   className="form-control"
@@ -261,7 +311,7 @@ export default function AddProduct() {
             </div>
             
             <div className="row mb-3">
-              <div className="col-md-6">
+              <div className="col-md-12">
                 <label htmlFor="stockStatus" className="form-label">Stock Status*</label>
                 <select
                   className="form-select"
@@ -275,7 +325,7 @@ export default function AddProduct() {
                   <option value="Out of Stock">Out of Stock</option>
                 </select>
               </div>
-              <div className="col-md-6">
+              <div className="col-md-6 display-hide">
                 <label htmlFor="adminEmail" className="form-label">Admin Email*</label>
                 <input
                   type="email"
@@ -289,35 +339,68 @@ export default function AddProduct() {
               </div>
             </div>
             
-            <div className="mb-3">
-              <label htmlFor="productImage" className="form-label">Image URL*</label>
-              <input
-                type="url"
-                className="form-control"
-                id="productImage"
-                name="productImage"
-                value={formData.productImage}
-                onChange={handleChange}
-                required
-              />
-              {formData.productImage && (
-                <div className="mt-2">
-                  <div style={{ position: 'relative', width: '150px', height: '150px' }}>
+            <div className="row mb-3">
+              <div className="col-md-6">
+                <label htmlFor="productImage" className="form-label">Image URL</label>
+                <input
+                  type="url"
+                  className="form-control"
+                  id="productImage"
+                  name="productImage"
+                  value={formData.productImage}
+                  onChange={handleChange}
+                  placeholder="https://example.com/image.jpg"
+                  disabled={uploadedFile}
+                />
+                <small className="text-muted">Enter image URL or upload a file below</small>
+              </div>
+              <div className="col-md-6">
+                <label htmlFor="imageFile" className="form-label">Upload Image</label>
+                <input
+                  type="file"
+                  className="form-control"
+                  id="imageFile"
+                  accept="image/*"
+                  onChange={handleFileUpload}
+                  disabled={formData.productImage}
+                />
+                <small className="text-muted">Supported formats: JPG, PNG, GIF, WebP</small>
+              </div>
+            </div>
+            
+            {imagePreview && (
+              <div className="mb-3">
+                <label className="form-label">Image Preview</label>
+                <div className="d-flex align-items-center">
+                  <div style={{ position: 'relative', width: '150px', height: '150px', marginRight: '15px' }}>
                     <Image 
-                      src={formData.productImage} 
+                      src={imagePreview} 
                       alt="Product preview" 
                       className="img-thumbnail" 
                       fill
                       style={{ objectFit: 'contain' }}
                       onError={(e) => {
                         e.target.onerror = null;
-                        e.target.src = 'https://via.placeholder.com/150?text=Invalid+Image+URL';
+                        e.target.src = 'https://via.placeholder.com/150?text=Invalid+Image';
                       }}
                     />
                   </div>
+                  <div>
+                    <button 
+                      type="button" 
+                      className="btn btn-sm btn-outline-danger"
+                      onClick={() => {
+                        setImagePreview('');
+                        setUploadedFile(null);
+                        setFormData(prev => ({ ...prev, productImage: '' }));
+                      }}
+                    >
+                      Remove Image
+                    </button>
+                  </div>
                 </div>
-              )}
-            </div>
+              </div>
+            )}
             
             <div className="mb-3">
               <label htmlFor="productTags" className="form-label">Tags <small className="text-muted">(comma-separated)</small></label>
