@@ -31,7 +31,7 @@ export default function RefundPaymentPolicy() {
               <div className="mb-4">
                 <h2 className="h4 fw-bold mb-3" style={{ color: '#000' }}>1. Refund Policy</h2>
                 <p className="text-muted mb-3">
-                  We want you to be completely satisfied with your purchase. If you're not happy with your order, we're here to help.
+                  We want you to be completely satisfied with your purchase. If you&apos;re not happy with your order, we&apos;re here to help.
                 </p>
                 <h5 className="fw-bold mb-2" style={{ color: '#000' }}>Eligible for Refund:</h5>
                 <ul className="text-muted mb-3">
@@ -113,7 +113,7 @@ export default function RefundPaymentPolicy() {
               <div className="mb-4">
                 <h2 className="h4 fw-bold mb-3" style={{ color: '#000' }}>4. Cancellation Policy</h2>
                 <p className="text-muted mb-3">
-                  We understand that sometimes you need to cancel an order. Here's our cancellation policy to help you understand the process.
+                  We understand that sometimes you need to cancel an order. Here&apos;s our cancellation policy to help you understand the process.
                 </p>
                 <h5 className="fw-bold mb-2" style={{ color: '#000' }}>Order Cancellation:</h5>
                 <ul className="text-muted mb-3">
