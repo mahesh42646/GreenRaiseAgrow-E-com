@@ -1,0 +1,82 @@
+[
+  {
+    "productName": "Bone Meal",
+    "price": "₹249",
+    "category": "Fertilizer",
+    "sku": "GR-BM-10001",
+    "subcategory": "Eco-Friendly Fertilizer",
+    "shortDescription": "Organic Bone Meal for Strong Stems & Healthy Blooms.",
+    "longDescription": "Green Raise Bone Meal is a premium organic fertilizer rich in phosphorus and calcium. It promotes healthy root development, strong plant stems, and vibrant blooms naturally. Ideal for flowering plants, fruits, and vegetables.",
+    "tags": ["Bone Meal Fertilizer", "Organic Phosphorus Source", "Flowering Plant Booster", "Soil Amendment", "Calcium for Plants"]
+  },
+  {
+    "productName": "Organic Compost",
+    "price": "₹199",
+    "category": "Fertilizer",
+    "sku": "GR-OC-10002",
+    "subcategory": "Soil Conditioner",
+    "shortDescription": "Premium Organic Compost to Enrich Soil & Empower Plants.",
+    "longDescription": "Green Raise Organic Compost is 100% natural, improving soil fertility and moisture retention. It accelerates plant growth by providing essential nutrients while restoring soil health sustainably. Perfect for home gardens and farming.",
+    "tags": ["Organic Compost", "Soil Conditioner", "Natural Manure", "Garden Compost", "Eco-Friendly Fertilizer"]
+  },
+  {
+    "productName": "Neem Cake Powder",
+    "price": "₹229",
+    "category": "Fertilizer",
+    "sku": "GR-NC-10003",
+    "subcategory": "Organic Pest Control",
+    "shortDescription": "Neem Cake Powder for Root Protection & Plant Boost.",
+    "longDescription": "Green Raise Neem Cake Powder is a natural bio-fertilizer and pest repellent. It protects plant roots from harmful pests while boosting soil fertility, making it an eco-friendly solution for organic farming and gardening.",
+    "tags": ["Neem Cake Fertilizer", "Natural Pest Control", "Organic Plant Booster", "Soil Conditioner", "Root Protection"]
+  },
+  {
+    "productName": "Green Root Humic Acid Powder",
+    "price": "₹299",
+    "category": "Soil Care",
+    "sku": "GR-GR-10004",
+    "subcategory": "Humic Acid Supplement",
+    "shortDescription": "Humic Acid Powder to Boost Root Health & Nutrient Uptake.",
+    "longDescription": "Green Raise Green Root Humic Acid Powder enhances soil microbial activity, promotes root growth, and increases nutrient absorption. It rejuvenates soil structure for healthier plants and higher yields naturally.",
+    "tags": ["Humic Acid Fertilizer", "Root Growth Enhancer", "Soil Conditioner", "Organic Farming Supplement", "Plant Growth Booster"]
+  },
+  {
+    "productName": "Potting Mix",
+    "price": "₹179",
+    "category": "Soil Care",
+    "sku": "GR-PM-10005",
+    "subcategory": "All Purpose Potting Mix",
+    "shortDescription": "Perfect Potting Mix for Healthy Plant Growth.",
+    "longDescription": "Green Raise Potting Mix is a ready-to-use soil blend for pots, balconies, and terrace gardens. It provides excellent aeration, drainage, and nutrition, ensuring vibrant growth for flowers, vegetables, and indoor plants.",
+    "tags": ["Potting Soil", "Plant Mix", "Balcony Garden Soil", "Organic Pot Mix", "Indoor Plant Soil"]
+  },
+  {
+    "productName": "Vermi Compost",
+    "price": "₹149",
+    "category": "Fertilizer",
+    "sku": "GR-VC-10006",
+    "subcategory": "Organic Vermicompost",
+    "shortDescription": "Vermi Compost to Nourish Soil Naturally.",
+    "longDescription": "Green Raise Vermi Compost is a nutrient-rich organic fertilizer produced from earthworms. It enhances plant growth, improves soil texture, and boosts yield naturally without harmful chemicals.",
+    "tags": ["Vermicompost", "Earthworm Compost", "Organic Manure", "Natural Fertilizer", "Soil Enhancer"]
+  },
+  {
+    "productName": "Cow Dung Manure",
+    "price": "₹119",
+    "category": "Fertilizer",
+    "sku": "GR-CD-10007",
+    "subcategory": "Traditional Organic Fertilizer",
+    "shortDescription": "Cow Dung Manure for Organic Nutrition & Soil Health.",
+    "longDescription": "Green Raise Cow Dung Manure is a traditional organic fertilizer that enhances soil fertility and promotes sustainable plant growth. It provides slow-release nutrients, making it ideal for vegetables, fruits, and flowers.",
+    "tags": ["Cow Dung Fertilizer", "Organic Manure", "Desi Khad", "Natural Soil Enricher", "Traditional Farming"]
+  },
+  {
+    "productName": "Roots Spray (500ml)",
+    "price": "₹349",
+    "category": "Plant Care",
+    "sku": "GR-RT-10008",
+    "subcategory": "Root Booster Spray",
+    "shortDescription": "Roots Spray for Strong Root Development & Plant Health.",
+    "longDescription": "Green Raise Roots Spray is a liquid root enhancer that stimulates strong root growth and improves nutrient uptake. It is easy to apply and suitable for all types of plants, ensuring faster and healthier plant development.",
+    "tags": ["Root Spray", "Root Growth Booster", "Plant Growth Tonic", "Organic Root Enhancer", "Root Development Spray"]
+  }
+]

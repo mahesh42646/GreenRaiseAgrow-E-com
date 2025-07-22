@@ -36,7 +36,7 @@ export default function AdminProducts() {
   const filteredProducts = products.filter((product) => {
     return (
       product.productName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      product.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      product.productCategory.toLowerCase().includes(searchTerm.toLowerCase()) ||
       product.productId.toString().includes(searchTerm)
     );
   });
@@ -175,7 +175,7 @@ export default function AdminProducts() {
                       <td>
                         <div className="d-flex align-items-center  ">
                           <Image 
-                            src={product.productImage && product.productImage.length > 0 ? product.productImage[0] : 'https://via.placeholder.com/50'} 
+                            src={product.productImage ? product.productImage : 'https://via.placeholder.com/50'} 
                             alt={product.productName} 
                             className="me-2 border rounded-5" 
                             width={50}

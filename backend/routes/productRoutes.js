@@ -48,6 +48,7 @@ module.exports = function(io) {
   // Create a new product
   router.post('/', async (req, res) => {
     try {
+      // Accepts: media (array of {type, url}), thumbnail (string), and all other fields
       const newProduct = new Product(req.body);
       const savedProduct = await newProduct.save();
       
@@ -67,6 +68,7 @@ module.exports = function(io) {
   // Update a product
   router.put('/:id', async (req, res) => {
     try {
+      // Accepts: media (array of {type, url}), thumbnail (string), and all other fields
       const updatedProduct = await Product.findOneAndUpdate(
         { productId: req.params.id },
         req.body,
@@ -143,6 +145,87 @@ module.exports = function(io) {
       });
     } catch (error) {
       console.error('Error adding review:', error);
+      res.status(500).json({ message: 'Server error', error: error.message });
+    }
+  });
+
+  // Add a FAQ to a product
+  router.post('/:id/faqs', async (req, res) => {
+    try {
+      const product = await Product.findOne({ productId: req.params.id });
+      if (!product) return res.status(404).json({ message: 'Product not found' });
+      product.faqs.push(req.body);
+      await product.save();
+      res.status(201).json(product.faqs);
+    } catch (error) {
+      res.status(500).json({ message: 'Server error', error: error.message });
+    }
+  });
+
+  // Update a FAQ
+  router.put('/:id/faqs/:faqId', async (req, res) => {
+    try {
+      const product = await Product.findOne({ productId: req.params.id });
+      if (!product) return res.status(404).json({ message: 'Product not found' });
+      const faq = product.faqs.id(req.params.faqId);
+      if (!faq) return res.status(404).json({ message: 'FAQ not found' });
+      faq.question = req.body.question;
+      faq.answer = req.body.answer;
+      await product.save();
+      res.status(200).json(faq);
+    } catch (error) {
+      res.status(500).json({ message: 'Server error', error: error.message });
+    }
+  });
+
+  // Delete a FAQ
+  router.delete('/:id/faqs/:faqId', async (req, res) => {
+    try {
+      const product = await Product.findOne({ productId: req.params.id });
+      if (!product) return res.status(404).json({ message: 'Product not found' });
+      product.faqs = product.faqs.filter(faq => faq.faqId !== req.params.faqId);
+      await product.save();
+      res.status(200).json(product.faqs);
+    } catch (error) {
+      res.status(500).json({ message: 'Server error', error: error.message });
+    }
+  });
+
+  // Add a customer question
+  router.post('/:id/questions', async (req, res) => {
+    try {
+      const product = await Product.findOne({ productId: req.params.id });
+      if (!product) return res.status(404).json({ message: 'Product not found' });
+      product.questions.push(req.body);
+      await product.save();
+      res.status(201).json(product.questions);
+    } catch (error) {
+      res.status(500).json({ message: 'Server error', error: error.message });
+    }
+  });
+
+  // Answer a customer question
+  router.put('/:id/questions/:questionId', async (req, res) => {
+    try {
+      const product = await Product.findOne({ productId: req.params.id });
+      if (!product) return res.status(404).json({ message: 'Product not found' });
+      const question = product.questions.id(req.params.questionId);
+      if (!question) return res.status(404).json({ message: 'Question not found' });
+      question.answer = req.body.answer;
+      await product.save();
+      res.status(200).json(question);
+    } catch (error) {
+      res.status(500).json({ message: 'Server error', error: error.message });
+    }
+  });
+
+  // Get all questions for a product
+  router.get('/:id/questions', async (req, res) => {
+    try {
+      const product = await Product.findOne({ productId: req.params.id });
+      if (!product) return res.status(404).json({ message: 'Product not found' });
+      res.status(200).json(product.questions);
+    } catch (error) {
       res.status(500).json({ message: 'Server error', error: error.message });
     }
   });

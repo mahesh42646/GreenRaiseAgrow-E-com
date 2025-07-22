@@ -18,7 +18,6 @@ export default function Shop() {
         const data = await productAPI.getAllProducts();
         setProducts(Array.isArray(data) ? data : []);
       } catch (err) {
-        console.error("Error fetching products:", err);
         setError("Failed to load products. Please try again later.");
         setProducts([]);
       } finally {
@@ -34,9 +33,7 @@ export default function Shop() {
       id: product.productId,
       name: product.productName,
       price: product.discountedPrice || product.actualPrice,
-      image: product.productImage && product.productImage.length > 0 
-        ? product.productImage[0] 
-        : "https://via.placeholder.com/150"
+      image: product.productImage || "https://via.placeholder.com/150"
     });
   };
 
@@ -64,7 +61,7 @@ export default function Shop() {
   return (
     <div className="container py-5">
       <div className="row">
-        <div className="col-12">
+        <div className="col-12 " style={{minHeight: "80vh"}}>
           <h1 className="mb-4">Shop</h1>
           <p className="lead">
             Browse our collection of eco-friendly products.
@@ -81,39 +78,38 @@ export default function Shop() {
                   <div className="card h-100">
                     <Link href={`/product-details/${product.productId}`}>
                       <Image 
-                        src={product.productImage && product.productImage.length > 0 
-                          ? product.productImage[0] 
-                          : "https://via.placeholder.com/300"}
+                        src={product.productImage || "https://via.placeholder.com/300"}
                         className="card-img-top" 
-                        alt={product.productName} 
+                        alt={product.productName || "Product"} 
                         style={{ height: "200px", objectFit: "cover" }}
-                        width={50}
-                        height={50}
+                        width={300}
+                        height={200}
                         unoptimized={true}
                       />
                     </Link>
                     <div className="card-body d-flex flex-column">
                       <h5 className="card-title">
                         <Link href={`/product-details/${product.productId}`} className="text-decoration-none text-dark">
-                          {product.productName}
+                          {product.productName || "Unnamed Product"}
                         </Link>
                       </h5>
-                      <p className="card-text small text-muted mb-2">{product.shortDescription.substring(0, 60)}...</p>
+                      <p className="card-text small text-muted mb-2">{product.shortDescription ? product.shortDescription.substring(0, 60) + "..." : "No description available."}</p>
                       <div className="mt-auto">
                         <div className="d-flex justify-content-between align-items-center mb-2">
                           {product.discountedPrice ? (
                             <>
-                              <span className="fw-bold">${product.discountedPrice.toFixed(2)}</span>
-                              <span className="text-muted text-decoration-line-through">${product.actualPrice.toFixed(2)}</span>
+                              <span className="fw-bold">₹{product.discountedPrice.toFixed(2)}</span>
+                              <span className="text-muted text-decoration-line-through">₹{product.actualPrice.toFixed(2)}</span>
                             </>
                           ) : (
-                            <span className="fw-bold">${product.actualPrice.toFixed(2)}</span>
+                            <span className="fw-bold">₹{product.actualPrice ? product.actualPrice.toFixed(2) : "N/A"}</span>
                           )}
                         </div>
                         <button 
                           className="btn btn-sm w-100" 
                           style={{ backgroundColor: '#08A486', color: 'white' }}
                           onClick={() => handleAddToCart(product)}
+                          disabled={!product.productId || !product.productName}
                         >
                           <i className="bi bi-cart-plus me-1"></i> Add to Cart
                         </button>

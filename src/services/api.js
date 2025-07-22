@@ -62,6 +62,29 @@ export const productAPI = {
     method: 'POST',
     body: JSON.stringify(reviewData),
   }),
+  // FAQ endpoints
+  getFaqs: (productId) => fetchAPI(`/products/${productId}`), // faqs are in product object
+  addFaq: (productId, faq) => fetchAPI(`/products/${productId}/faqs`, {
+    method: 'POST',
+    body: JSON.stringify(faq),
+  }),
+  updateFaq: (productId, faqId, faq) => fetchAPI(`/products/${productId}/faqs/${faqId}`, {
+    method: 'PUT',
+    body: JSON.stringify(faq),
+  }),
+  deleteFaq: (productId, faqId) => fetchAPI(`/products/${productId}/faqs/${faqId}`, {
+    method: 'DELETE',
+  }),
+  // Questions endpoints
+  getQuestions: (productId) => fetchAPI(`/products/${productId}/questions`),
+  addQuestion: (productId, question) => fetchAPI(`/products/${productId}/questions`, {
+    method: 'POST',
+    body: JSON.stringify(question),
+  }),
+  answerQuestion: (productId, questionId, answer) => fetchAPI(`/products/${productId}/questions/${questionId}`, {
+    method: 'PUT',
+    body: JSON.stringify({ answer }),
+  }),
 };
 
 // Blog related API calls

@@ -8,21 +8,25 @@ const productSchema = new mongoose.Schema({
   activeViewCount: { type: Number, default: 0 },
   actualPrice: { type: Number, required: true },
   discountedPrice: { type: Number },
-  shortDescription: { type: String, required: true },
-  longDescription: { type: String, required: true },
-  productImage: { type: [String], default: [] },
+  shortDescription: { type: String },
+  longDescription: { type: String },
+  productImage: { type: String, required: true }, // Main thumbnail image
+  media: [{
+    type: { type: String, enum: ['image', 'video'], required: true },
+    url: { type: String, required: true }
+  }],
   productVideo: { type: String, default: "" },
   productBrochure: { type: String, default: "" },
   productReviews: { type: [String], default: [] },
   productRating: { type: Number, default: 0 },
-  productCategory: { type: String, required: true },
-  productSubcategory: { type: String, required: true },
+  productCategory: { type: String },
+  productSubcategory: { type: String },
   productTags: { type: [String], default: [] },
-  quantity: { type: Number, required: true },
+  quantity: { type: Number },
   variants: { type: [String] },
-  skuNo: { type: String, required: true, unique: true },
-  stockStatus: { type: String, enum: ['In Stock', 'Out of Stock'], required: true },
-  quantityStockLeft: { type: Number, required: true },
+  skuNo: { type: String },
+  stockStatus: { type: String, enum: ['In Stock', 'Out of Stock'] },
+  quantityStockLeft: { type: Number },
   reviews: [{
     reviewId: { type: String, default: uuidv4 },
     reviewerName: { type: String },
@@ -57,6 +61,19 @@ const productSchema = new mongoose.Schema({
   moisturePercentage: { type: Number, default: 0 },
   isUpcoming: { type: Boolean, default: false },
   waitingTime: { type: String, default: '' },
+  faqs: [{
+    faqId: { type: String, default: uuidv4 },
+    question: { type: String, required: true },
+    answer: { type: String, required: true }
+  }],
+  questions: [{
+    questionId: { type: String, default: uuidv4 },
+    customerName: { type: String },
+    customerEmail: { type: String },
+    question: { type: String, required: true },
+    answer: { type: String },
+    askedAt: { type: Date, default: Date.now }
+  }],
 }, { timestamps: true });
 
 module.exports = mongoose.model('Product', productSchema); 

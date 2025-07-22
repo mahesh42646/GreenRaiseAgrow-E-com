@@ -13,7 +13,7 @@
   min-height: 100svh;
   padding: 80px;
   gap: 64px;
-  font-family: var(--font-geist-sans);
+  font-family: Oswald, sans-serif;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -32,10 +32,11 @@
   flex-direction: column;
   gap: 32px;
   grid-row-start: 2;
+  font-family: Oswald, sans-serif;
 }
 
 .main ol {
-  font-family: var(--font-geist-mono);
+  font-family: Oswald, sans-serif;
   padding-left: 0;
   margin: 0;
   font-size: 14px;
@@ -49,7 +50,7 @@
 }
 
 .main code {
-  font-family: inherit;
+  font-family: Oswald, sans-serif;
   background: var(--gray-alpha-100);
   padding: 2px 4px;
   border-radius: 4px;
@@ -59,6 +60,7 @@
 .ctas {
   display: flex;
   gap: 16px;
+  font-family: Oswald, sans-serif;
 }
 
 .ctas a {
@@ -79,29 +81,34 @@
   font-size: 16px;
   line-height: 20px;
   font-weight: 500;
+  font-family: Oswald, sans-serif;
 }
 
 a.primary {
   background: var(--foreground);
   color: var(--background);
   gap: 8px;
+  font-family: Oswald, sans-serif;
 }
 
 a.secondary {
   border-color: var(--gray-alpha-200);
   min-width: 158px;
+  font-family: Oswald, sans-serif;
 }
 
 .footer {
   grid-row-start: 3;
   display: flex;
   gap: 24px;
+  font-family: Oswald, sans-serif;
 }
 
 .footer a {
   display: flex;
   align-items: center;
   gap: 8px;
+  font-family: Oswald, sans-serif;
 }
 
 .footer img {

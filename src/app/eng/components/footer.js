@@ -21,8 +21,20 @@ export default function Footer() {
   };
 
   return (
-    <footer className="bg-dark text-white py-4 mt-5">
-      <div className="container">
+    <footer className="bg-dark text-white mt-5" 
+    style={{
+      backgroundImage: 'url(./1041.jpg)',
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+      backgroundRepeat: 'no-repeat',
+    }}
+    >
+      <div  className='py-5'
+      style={{
+       backgroundColor: 'rgba(0, 0, 0, 0.57)',
+      }}>
+      <div className="container "
+      >
         <div className="row">
           {/* Company Info */}
           <div className="col-md-4 mb-3">
@@ -111,6 +123,8 @@ export default function Footer() {
          
         </div>
       </div>
+      </div>
+      
     </footer>
   );
 }

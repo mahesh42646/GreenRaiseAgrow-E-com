@@ -1,29 +1,37 @@
-import React from "react";
+import { useState, useEffect } from "react";
+import { productAPI } from "../../../services/api";
 import Link from "next/link";
 import Image from "next/image";
 
 export default function Home() {
   // Sample data - in a real app, these would come from an API
-  const categories = [
-    { id: 1, name: "Hot Deals on New Items", subtitle: "Daily Essentials Eggs & Dairy", image: "https://themes.pixelstrap.com/fastkart/assets/images/vegetable/product/1.png", discount: "5% OFF" },
-    { id: 2, name: "Buy More & Save More", subtitle: "Fresh Vegetables", image: "https://themes.pixelstrap.com/fastkart/assets/images/vegetable/product/1.png", discount: "5% OFF" },
-    { id: 3, name: "Organic Meat Prepared", subtitle: "Delivered to Your Home", image: "https://themes.pixelstrap.com/fastkart/assets/images/vegetable/product/1.png", discount: "5% OFF" },
-    { id: 4, name: "Buy More & Save More", subtitle: "Nuts & Snacks", image: "https://themes.pixelstrap.com/fastkart/assets/images/vegetable/product/1.png", discount: "5% OFF" }
-  ];
 
-  const featuredProducts = [
-    { id: 1, name: "Bamboo Toothbrush", price: 12.99, image: "https://themes.pixelstrap.com/fastkart/assets/images/vegetable/banner/2.jpg", rating: 4.8 },
-    { id: 2, name: "Reusable Water Bottle", price: 24.99, image: "https://themes.pixelstrap.com/fastkart/assets/images/vegetable/banner/2.jpg", rating: 4.9 },
-    { id: 3, name: "Organic Cotton Tote", price: 18.99, image: "https://themes.pixelstrap.com/fastkart/assets/images/vegetable/banner/2.jpg", rating: 4.7 },
-    { id: 4, name: "Beeswax Food Wraps", price: 15.99, image: "https://themes.pixelstrap.com/fastkart/assets/images/vegetable/banner/2.jpg", rating: 4.6 }
-  ];
 
-  const popularProducts = [
-    { id: 5, name: "Solar Power Bank", price: 39.99, image: "https://themes.pixelstrap.com/fastkart/assets/images/vegetable/banner/2.jpg", rating: 4.9 },
-    { id: 6, name: "Recycled Paper Journal", price: 9.99, image: "https://themes.pixelstrap.com/fastkart/assets/images/vegetable/banner/2.jpg", rating: 4.5 },
-    { id: 7, name: "Bamboo Cutlery Set", price: 14.99, image: "https://themes.pixelstrap.com/fastkart/assets/images/vegetable/banner/2.jpg", rating: 4.7 },
-    { id: 8, name: "Organic Soap Bar", price: 7.99, image: "https://themes.pixelstrap.com/fastkart/assets/images/vegetable/banner/2.jpg", rating: 4.8 }
-  ];
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        setLoading(true);
+        const data = await productAPI.getAllProducts();
+        setProducts(Array.isArray(data) ? data : []);
+      } catch (err) {
+        setError("Failed to load products. Please try again later.");
+        setProducts([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProducts();
+  }, []);
+
+  // Featured Products: Any products (up to 4)
+  const featuredProducts = products.slice(0, 8);
+
+  // Most Popular: Bestsellers
+  const popularProducts = products.filter((p) => p.isBestSeller).slice(0, 4);
 
   const testimonials = [
     { id: 1, name: "Sarah Johnson", role: "Eco Enthusiast", text: "GreenRaise has completely transformed how I shop for everyday items. Their products are not only sustainable but also high quality!", avatar: "https://themes.pixelstrap.com/fastkart/assets/images/vegetable/product/1.png" },
@@ -38,265 +46,243 @@ export default function Home() {
     { id: 4, question: "What is your return policy?", answer: "We offer a 30-day return policy on all unused items. Please contact our customer service team to initiate a return." }
   ];
 
+  // Animation utility classes
+  const sectionClass = "mb-5 fade-in-section";
+  const headingClass = "section-heading pt-4 pb-0 position-relative";
+
   return (
     <>
+      <style jsx global>{`
+        .fade-in-section {
+          opacity: 0;
+          transform: translateY(40px);
+          transition: opacity 0.7s cubic-bezier(.4,0,.2,1), transform 0.7s cubic-bezier(.4,0,.2,1);
+        }
+        .fade-in-section.visible {
+          opacity: 1;
+          transform: none;
+        }
+        .product-card {
+          transition: box-shadow 0.3s, transform 0.3s;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+          border-radius: 16px;
+          overflow: hidden;
+          background: #fff;
+        }
+        .product-card:hover {
+          box-shadow: 0 8px 32px rgba(8,164,134,0.18);
+          transform: translateY(-8px) scale(1.03);
+        }
+        .product-card .card-img-zoom {
+          transition: transform 0.4s cubic-bezier(.4,0,.2,1);
+        }
+        .product-card:hover .card-img-zoom {
+          transform: scale(1.08);
+        }
+        .section-heading {
+          font-size: 2.2rem;
+          font-weight: 700;
+          letter-spacing: -1px;
+          color: #222;
+          display: inline-block;
+          padding-bottom: 0.3em;
+          margin-bottom: 1.2em;
+        }
+        @media (max-width: 768px) {
+          .section-heading { font-size: 1.5rem; }
+        }
+        .section-gap { margin-top: 3rem; margin-bottom: 3rem; }
+      `}</style>
+      <script dangerouslySetInnerHTML={{
+        __html: `
+          document.addEventListener('DOMContentLoaded', function() {
+            const sections = document.querySelectorAll('.fade-in-section');
+            const reveal = () => {
+              for (const section of sections) {
+                const rect = section.getBoundingClientRect();
+                if (rect.top < window.innerHeight - 60) {
+                  section.classList.add('visible');
+                }
+              }
+            };
+            window.addEventListener('scroll', reveal);
+            reveal();
+          });
+        `
+      }} />
       {/* Hero Section - Based on the image */}
-      <div className="container p-0">
-        <div className="row g-0">
-          {/* Main Hero Banner */}
-          <div className="col-lg-8 position-relative">
-            <div className="bg-light " style={{ minHeight: "400px" }}>
-              <div className="row">
-                <div className="">
-                  <div className="position-relative p-5" style={{
-                    backgroundImage: 'url(https://themes.pixelstrap.com/fastkart/assets/images/vegetable/banner/1.jpg)',
-                    backgroundSize: 'cover',
-                    backgroundPosition: 'center',
-                    backgroundRepeat: 'no-repeat',
-                    display: 'flex',
-                    alignItems: 'center'
-                  }}>
-                    <div className="p" style={{
-                      borderRadius: '10px',
-                      maxWidth: '500px'
+      <div className="p-0" >
+        <div className=" p-0">
+          <div className="row g-0 p-0">
+            {/* Main Hero Banner */}
+            <div className="w-100 position-relative p-0">
+              <div className="bg-light " style={{ minHeight: "400px" }}>
+                <div className="row">
+                  <div className="">
+                    <div className="position-relative p-0" style={{
+                      backgroundImage: 'url("/Hero-Bg.jpg")',
+                      backgroundSize: 'cover',
+                      backgroundPosition: 'center',
+                      backgroundRepeat: 'no-repeat',
+                      display: 'flex',
+                      alignItems: 'center',
                     }}>
-                      <span className="badge rounded-pill text-bg-danger mb-2">Exclusive offer</span>
-                      <span className="badge rounded-pill text-bg-warning ms-2 mb-2">30% Off</span>
-                      <h1 className="display-5 fw-bold mb-3">STAY HOME &<br />DELIVERED YOUR</h1>
-                      <h2 className="display-6 fw-bold text-success mb-4">DAILY NEEDS</h2>
-                      <p className="mb-4">Vegetables contain many vitamins and minerals that are good for your health.</p>
-                      <Link href="/shop" className="btn btn-danger rounded-pill px-4 py-2">
-                        Shop Now <i className="bi bi-arrow-right ms-2"></i>
-                      </Link>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          
-          {/* Side Banners */}
-          <div className="col-lg-4">
-            <div className="row g-0">
-              {/* Nut Collection Banner */}
-              <div className="col-12 mb-3">
-                <div className="position-relative" style={{ minHeight: "200px" }}>
-                  <div className="position-relative p-3" style={{
-                    backgroundImage: 'url(https://themes.pixelstrap.com/fastkart/assets/images/vegetable/banner/2.jpg)',
-                    backgroundSize: 'cover',
-                    backgroundPosition: 'center',
-                    backgroundRepeat: 'no-repeat',
-                    minHeight: '200px',
-                    display: 'flex',
-                    alignItems: 'center'
-                  }}>
-                    <div className="p-3" style={{
-                      backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                      borderRadius: '10px',
-                      maxWidth: '100%'
-                    }}>
-                      <h3 className="text-danger mb-1">45% <span className="fs-5">OFF</span></h3>
-                      <h4 className="text-success mb-3">Nut Collection</h4>
-                      <p className="small mb-3">We deliver organic vegetables & fruits</p>
-                      <Link href="/shop" className="btn btn-sm btn-outline-dark">
-                        Shop Now <i className="bi bi-arrow-right ms-1"></i>
-                      </Link>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              
-              {/* Healthy Food Banner */}
-              <div className="col-12">
-                <div className="bg-light p-3 position-relative" style={{ minHeight: "200px" }}>
-                  <div className="position-relative p-3" style={{
-                    backgroundImage: 'url(https://themes.pixelstrap.com/fastkart/assets/images/vegetable/banner/3.jpg)',
-                    backgroundSize: 'cover',
-                    backgroundPosition: 'center',
-                    backgroundRepeat: 'no-repeat',
-                    minHeight: '200px',
-                    display: 'flex',
-                    alignItems: 'center'
-                  }}>
-                    <div className="p-3" style={{
-                      backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                      borderRadius: '10px',
-                      maxWidth: '100%'
-                    }}>
-                      <h4 className="text-success mb-1">Healthy Food</h4>
-                      <h5 className="text-danger mb-3">Organic Market</h5>
-                      <p className="small mb-3">Start your daily shopping with some...</p>
-                      <Link href="/shop" className="btn btn-sm btn-outline-dark">
-                        Shop Now <i className="bi bi-arrow-right ms-1"></i>
-                      </Link>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="container mt-5">
-        {/* Categories Section - Based on the image */}
-        <section className="mb-5">
-          <div className="row g-4">
-            {categories.map(category => (
-              <div key={category.id} className="col-md-6 col-lg-3">
-                <div className="card border-0 rounded-3 overflow-hidden">
-                  <div className="position-relative">
-                    <div className="position-absolute top-0 start-0 p-3">
-                      <span className="badge bg-danger">{category.discount}</span>
-                    </div>
-                    <div style={{ position: 'relative', height: '200px' }}>
-                      <Image 
-                        src={category.image} 
-                        alt={category.name}
-                        fill
-                        style={{ objectFit: 'cover' }}
-                      />
-                    </div>
-                    <div className="card-img-overlay d-flex flex-column justify-content-end">
-                      <div className="bg-white bg-opacity-75 p-3 rounded-3">
-                        <h5 className="card-title mb-1">{category.name}</h5>
-                        <p className="card-text mb-2">{category.subtitle}</p>
-                        <Link href="/shop" className="btn btn-sm rounded-pill" style={{ backgroundColor: category.id % 2 === 0 ? '#FF6B6B' : '#08A486', color: 'white' }}>
-                          Shop Now <i className="bi bi-arrow-right ms-1"></i>
+                      <div className="container py-5 " >
+                        <span className="badge rounded-pill text-bg-danger mb-2">Exclusive offer</span>
+                        <span className="badge rounded-pill text-bg-warning ms-2 mb-2">30% Off</span>
+                        <h1 className="display-5 fw-bold text-white mb-3">STAY HOME &<br />DELIVERED YOUR</h1>
+                        <h2 className="display-6 fw-bold text-success mb-4">DAILY NEEDS</h2>
+                        <p className="mb-4 d-lg-block d-none">Vegetables contain many vitamins and minerals that are good for your health.</p>
+                        <p className="mb-4 d-lg-none d-block" style={{ fontSize: '0.7rem' }}>Vegetables contain many vitamins and <br /> minerals that are good for your health.</p>
+                        <Link href="/shop" className="btn btn-danger rounded-pill px-4 py-2">
+                          Shop Now <i className="bi bi-arrow-right ms-2"></i>
                         </Link>
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
-            ))}
+            </div>
+
+
+          </div>
+        </div>
+      </div>
+
+      <div className=" ">
+        {/* Categories Section - Based on the image */}
+        <section className="  container py-5">
+          <h2 className="fw-bold py-2">Categories</h2>
+          <div className="row pb-3">
+            <div className="col-md-6 col-lg-4 py-lg-0 py-2 ">
+              <div className="p-0" style={{ position: 'relative', height: '100%', width: '100%' }}>
+                <Image className="p-0 rounded-4 shadow-sm" src="/1.jpg" alt="category" height={200} width={200}
+                  style={{ objectFit: 'contain', width: '100%', height: '100%' }} />
+              </div>
+            </div>
+
+            <div className="col-md-6 col-lg-4 py-lg-0 py-2 ">
+              <div className="p-0" style={{ position: 'relative', height: '100%', width: '100%' }}>
+                <Image className="p-0 rounded-4 shadow-sm" src="/2.jpg" alt="category" height={200} width={200}
+                  style={{ objectFit: 'contain', width: '100%', height: '100%' }} />
+              </div>
+            </div>
+
+            <div className="col-md-6 col-lg-4 py-lg-0 py-2 ">
+              <div className="p-0" style={{ position: 'relative', height: '100%', width: '100%' }}>
+                <Image className="p-0 rounded-4 shadow-sm" src="/3.jpg" alt="category" height={200} width={200}
+                  style={{ objectFit: 'contain', width: '100%', height: '100%' }} />
+              </div>
+            </div>
+
+
           </div>
         </section>
 
         {/* Featured Products */}
-        <section className="mb-5">
-          <div className="d-flex justify-content-between align-items-center mb-4">
-            <h2>Featured Products</h2>
-            <Link href="/shop" className="text-decoration-none" style={{ color: '#08A486' }}>View All</Link>
-          </div>
-          <div className="row g-4">
-            {featuredProducts.map(product => (
-              <div key={product.id} className="col-6 col-md-3">
-                <div className="card h-100 border-0 shadow-sm">
-                  <div className="badge bg-success position-absolute top-0 end-0 m-2" style={{ backgroundColor: '#08A486' }}>Featured</div>
-                  <div style={{ position: 'relative', height: '200px' }}>
-                    <Image 
-                      src={product.image} 
-                      alt={product.name}
-                      fill
-                      style={{ objectFit: 'cover' }}
-                    />
-                  </div>
-                  <div className="card-body">
-                    <h5 className="card-title">{product.name}</h5>
-                    <div className="d-flex justify-content-between align-items-center">
-                      <span className="fw-bold">${product.price}</span>
-                      <div>
-                        <i className="bi bi-star-fill text-warning"></i>
-                        <span className="ms-1">{product.rating}</span>
-                      </div>
+        <section className=" section- bg-light py-5">
+          <div className="container py-3 ">
+            <div className="d-flex pb-2 justify-content-between align-items-center ">
+              <h2 className="fw-bold my-auto">Featured Products</h2>
+              <Link href="/shop" className="text-decoration-none my-auto fw-bold shadow-sm btn" style={{ color: '#08A486' }}>View All <i className="bi bi-arrow-right ms-2"></i></Link>
+            </div>
+            <div className="row   rounded-4 p-0 ">
+              {featuredProducts.map(product => (
+                <div key={product.productId} className="col-6 rounded-4 p-3  col-md-3">
+                  <div className=" h-100 shadow-sm  position-relative bg-white py- px-3 rounded-4  ">
+                    <div className="badge bg-success position-absolute top-0 end-0 " style={{ backgroundColor: '#08A486', zIndex: 1000 }}>Featured</div>
+                    <div style={{ position: 'relative', height: '280px' }}>
+                      <Image
+                        src={product.productImage || "https://via.placeholder.com/300"}
+                        alt={product.productName || "Product"}
+                        fill
+                        className="card-img-zoom p-1"
+                        style={{ objectFit: 'contain' }}
+                      />
                     </div>
-                  </div>
-                  <div className="card-footer bg-white border-top-0">
-                    <Link href={`/product-details/${product.id}`} className="btn btn-outline-success w-100" style={{ borderColor: '#08A486', color: '#08A486' }}>
-                      View Product
-                    </Link>
+                    <div className="py-3">
+                      <h5 className="fw-bold" style={{fontSize: '1rem'}}>{product.productName || "Unnamed Product"}</h5>
+                      <div className="d-flex justify-content-between align-items-center">
+                      <div>
+                      {product.discountedPrice ? (
+                          <>
+                            <span className="fw-bold pe-2" style={{color: '#08A486', fontSize: '1rem'}}>₹{product.discountedPrice.toFixed(1)}</span>
+                            <span className="text-muted text-decoration-line-through" style={{fontSize: '0.8rem'}}>₹{product.actualPrice.toFixed(1)}</span>
+                          </>
+                        ) : (
+                          <span className="fw-bold">₹{product.actualPrice ? product.actualPrice.toFixed(2) : "N/A"}</span>
+                        )}
+                        
+                      </div>
+                        <div>
+                          <i className="bi bi-star-fill text-warning"></i>
+                          <span className="ms-1">{product.averageRating}</span>
+                        </div>
+                      </div>
+                      <p className="card-text  mb-2 mt-2">{product.shortDescription ? product.shortDescription.substring(0, 30) + "..." : "No description available."}</p>
+                      <div className="card-footer bg-white ">
+                      <Link href={`/product-details/${product.productId}`} className="btn rounded-3 w-100" style={{ borderColor: '#08A486', color: '#08A486' }}>
+                        View Product
+                      </Link>
+                    </div>
+                    </div>
+                   
                   </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </section>
 
-        {/* Popular Products */}
-        <section className="mb-5">
-          <div className="d-flex justify-content-between align-items-center mb-4">
-            <h2>Most Popular</h2>
-            <Link href="/shop" className="text-decoration-none" style={{ color: '#08A486' }}>View All</Link>
-          </div>
-          <div className="row g-4">
-            {popularProducts.map(product => (
-              <div key={product.id} className="col-6 col-md-3">
-                <div className="card h-100 border-0 shadow-sm">
-                  <div className="badge bg-danger position-absolute top-0 end-0 m-2">Popular</div>
-                  <div style={{ position: 'relative', height: '200px' }}>
-                    <Image 
-                      src={product.image} 
-                      alt={product.name}
-                      fill
-                      style={{ objectFit: 'cover' }}
-                    />
-                  </div>
-                  <div className="card-body">
-                    <h5 className="card-title">{product.name}</h5>
-                    <div className="d-flex justify-content-between align-items-center">
-                      <span className="fw-bold">${product.price}</span>
-                      <div>
-                        <i className="bi bi-star-fill text-warning"></i>
-                        <span className="ms-1">{product.rating}</span>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="card-footer bg-white border-top-0">
-                    <Link href={`/product-details/${product.id}`} className="btn btn-outline-success w-100" style={{ borderColor: '#08A486', color: '#08A486' }}>
-                      View Product
-                    </Link>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
+
 
         {/* Testimonials */}
-        <section className="mb-5 py-5 bg-light">
-          <div className="text-center mb-5">
-            <h2>What Our Customers Say</h2>
-            <p className="text-muted">Join thousands of satisfied customers who have made the switch to sustainable living</p>
-          </div>
-          <div className="row g-4">
-            {testimonials.map(testimonial => (
-              <div key={testimonial.id} className="col-md-4">
-                <div className="card h-100 border-0 shadow-sm">
-                  <div className="card-body text-center p-4">
-                    <div className="mb-3">
-                      <i className="bi bi-quote fs-1 text-success" style={{ color: '#08A486' }}></i>
-                    </div>
-                    <p className="card-text mb-4">{testimonial.text}</p>
-                    <div className="d-flex justify-content-center align-items-center">
-                      <div style={{ position: 'relative', width: '50px', height: '50px' }}>
-                        <Image 
-                          src={testimonial.avatar} 
-                          alt={testimonial.name}
-                          fill
-                          className="rounded-circle"
-                          style={{ objectFit: 'cover' }}
-                        />
+        <section className=" py-5 ">
+
+          <div className="container py-3">
+            <div className="  py-2">
+              <h2 className="fw-bold">What Our Customers Say</h2>
+              {/* <p className="text-muted">Join thousands of satisfied customers who have made the switch to sustainable living</p> */}
+            </div>
+            <div className="row g-4 ">
+              {testimonials.map(testimonial => (
+                <div key={testimonial.id} className="col-md-4 ">
+                  <div className="card h-100 shadow-sm border">
+                    <div className="card-body text-center p-4">
+                      <div className="mb-3">
+                        <i className="bi bi-quote fs-1 text-success" style={{ color: '#08A486' }}></i>
                       </div>
-                      <div className="text-start ms-3">
-                        <h6 className="mb-0">{testimonial.name}</h6>
-                        <small className="text-muted">{testimonial.role}</small>
+                      <p className="card-text ">{testimonial.text}</p>
+                      <div className="d-flex justify-content-center align-items-center">
+                        <div style={{ position: 'relative', width: '50px', height: '50px' }}>
+                          <Image
+                            src={testimonial.avatar}
+                            alt={testimonial.name}
+                            fill
+                            className="rounded-circle"
+                            style={{ objectFit: 'cover' }}
+                          />
+                        </div>
+                        <div className="text-start ms-3">
+                          <h6 className="mb-0">{testimonial.name}</h6>
+                          <small className="text-muted">{testimonial.role}</small>
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </section>
 
         {/* Contact Section */}
-        <section className="mb-5">
-          <div className="row g-0 align-items-center">
+        <section className="  bg-light py-5 ">
+          <div className="row mx-auto g-3 align-items-center py-3  container">
             <div className="col-md-6">
-              <div className="p-4 p-md-5">
-                <h2 className="mb-4">Get in Touch</h2>
-                <p className="mb-4">Have questions about our products or sustainability practices? We&apos;d love to hear from you!</p>
+              <div className=" py-3">
+                <h2 className="">Get in Touch</h2>
+                <p className="">Have questions about our products or sustainability practices? We&apos;d love to hear from you!</p>
                 <form>
                   <div className="mb-3">
                     <input type="text" className="form-control" placeholder="Your Name" required />
@@ -313,8 +299,8 @@ export default function Home() {
             </div>
             <div className="col-md-6 d-none d-md-block">
               <div style={{ position: 'relative', height: '400px' }}>
-                <Image 
-                  src="https://themes.pixelstrap.com/fastkart/assets/images/vegetable/banner/1.jpg" 
+                <Image
+                  src="https://themes.pixelstrap.com/fastkart/assets/images/vegetable/banner/1.jpg"
                   alt="Contact us"
                   fill
                   style={{ objectFit: 'cover' }}
@@ -325,33 +311,93 @@ export default function Home() {
         </section>
 
         {/* FAQ Section */}
-        <section className="mb-5">
-          <div className="text-center mb-5">
-            <h2>Frequently Asked Questions</h2>
-            <p className="text-muted">Find answers to common questions about our products and services</p>
+        <section className=" container py-5">
+          <h2 className="fw-bold py-2">Why Choose Us</h2>
+          <div className="row text-center">
+            <div className="col-md-4 mb-4">
+              <div className="p-4 h-100 border rounded-4 shadow-sm bg-white animate__animated animate__fadeInUp">
+                <i className="bi bi-globe2 fs-1 mb-3 text-success"></i>
+                <h5 className="fw-bold mb-2">Eco Commitment</h5>
+                <p>All our products are vetted for sustainability, so you can shop with confidence and make a real difference.</p>
+              </div>
+            </div>
+            <div className="col-md-4 mb-4">
+              <div className="p-4 h-100 border rounded-4 shadow-sm bg-white animate__animated animate__fadeInUp animate__delay-1s">
+                <i className="bi bi-people fs-1 mb-3 text-success"></i>
+                <h5 className="fw-bold mb-2">Community Focus</h5>
+                <p>We support local artisans and eco-initiatives, building a greener future together with our customers.</p>
+              </div>
+            </div>
+            <div className="col-md-4 mb-4">
+              <div className="p-4 h-100 border rounded-4 shadow-sm bg-white animate__animated animate__fadeInUp animate__delay-2s">
+                <i className="bi bi-truck fs-1 mb-3 text-success"></i>
+                <h5 className="fw-bold mb-2">Fast, Green Delivery</h5>
+                <p>Enjoy quick, reliable shipping in plastic-free packaging, with carbon offset for every order.</p>
+              </div>
+            </div>
           </div>
-          <div className="accordion" id="faqAccordion">
+        </section>
+
+        {/* Who We Are Section */}
+        <section className=" bg-light py-5">
+          <div className="container">
+            <h2 className="fw-bold py-2">Who We Are</h2>
+            <div className="row ">
+
+              <div className="col-md-6  p-2">
+                <h4 className="fw-bold mb-3" style={{ color: '#08A486' }}>Empowering Sustainable Choices</h4>
+                <p className="lead">GreenRaise is a passionate team dedicated to making eco-friendly living accessible and enjoyable for everyone. We carefully curate products that are good for you and the planet, and we believe in transparency, quality, and community impact.</p>
+                <p className="lead">GreenRaise is a passionate team dedicated to making eco-friendly living accessible and enjoyable for everyone. We carefully curate products that are good for you and the planet, and we believe in transparency, quality, and community impact.</p>
+              </div>
+              <div className="col-md-6 mb-4 mb-md-0 border">
+                <Image src="/globe.svg" alt="Who We Are" width={400} height={300} style={{ objectFit: 'contain' }} />
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className=" container py-5">
+          <div className=" py-2">
+            <h2 className="fw-bold">Frequently Asked Questions</h2>
+          </div>
+          <div className="accordion" id="faqCustomAccordion">
             {faqs.map((faq, index) => (
-              <div key={faq.id} className="accordion-item">
-                <h2 className="accordion-header" id={`heading${faq.id}`}>
-                  <button 
-                    className={`accordion-button ${index !== 0 ? 'collapsed' : ''}`} 
-                    type="button" 
-                    data-bs-toggle="collapse" 
-                    data-bs-target={`#collapse${faq.id}`} 
-                    aria-expanded={index === 0 ? 'true' : 'false'} 
-                    aria-controls={`collapse${faq.id}`}
+              <div className="accordion-item mb-4 border-0" key={faq.id}>
+                <h2 className="accordion-header" id={`faqCustomHeading${faq.id}`}>
+                  <button
+                    className={`accordion-button d-flex justify-content-between align-items-center text-dark fw-bold  px-4 py-3 ${index !== 0 ? "collapsed" : ""}`}
+                    type="button"
+                    data-bs-toggle="collapse"
+                    data-bs-target={`#faqCustomCollapse${faq.id}`}
+                    aria-expanded={index === 0 ? "true" : "false"}
+                    aria-controls={`faqCustomCollapse${faq.id}`}
+                    style={{
+                      background: "linear-gradient(45deg,rgb(242, 242, 242) 90%,rgb(59, 198, 168) 80%)",
+                      
+                      fontSize: "1.15rem",
+                      borderRadius: 0,
+                      border: "none",
+                      boxShadow: "none",
+                    }}
                   >
                     {faq.question}
+                
                   </button>
                 </h2>
-                <div 
-                  id={`collapse${faq.id}`} 
-                  className={`accordion-collapse collapse ${index === 0 ? 'show' : ''}`} 
-                  aria-labelledby={`heading${faq.id}`} 
-                  data-bs-parent="#faqAccordion"
+                <div
+                  id={`faqCustomCollapse${faq.id}`}
+                  className={`accordion-collapse collapse${index === 0 ? " show" : ""}`}
+                  aria-labelledby={`faqCustomHeading${faq.id}`}
+                  data-bs-parent="#faqCustomAccordion"
                 >
-                  <div className="accordion-body">
+                  <div
+                    className="accordion-body px-4 py-4"
+                    style={{
+                      fontSize: "1.08rem",
+                      borderBottom: "3px solid #08A485",
+                      background: "#fff",
+                    }}
+                  >
                     {faq.answer}
                   </div>
                 </div>

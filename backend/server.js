@@ -22,8 +22,8 @@ connectDB();
 
 // Middleware
 app.use(cors());
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json({ limit: '100mb' }));
+app.use(bodyParser.urlencoded({ extended: true, limit: '100mb' }));
 
 // Serve static files from uploads directory
 app.use('/api/ecom/products/uploads', express.static('uploads'));
