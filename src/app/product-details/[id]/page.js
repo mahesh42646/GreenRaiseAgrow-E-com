@@ -9,6 +9,7 @@ import { productAPI } from '../../../services/api';
 import { useCart } from '../../../context/CartContext';
 import Image from 'next/image';
 import { useAuth } from '../../../context/AuthContext';
+import Modal from 'react-modal';
 
 export default function ProductDetailsPage() {
   const params = useParams();
@@ -43,6 +44,18 @@ export default function ProductDetailsPage() {
   const [answererNames, setAnswererNames] = useState({});
   const [showAnswerForm, setShowAnswerForm] = useState({});
   const [answerEmails, setAnswerEmails] = useState({});
+  const [editingAnswer, setEditingAnswer] = useState(null);
+  const [inlineAnswers, setInlineAnswers] = useState({});
+  const [inlineNames, setInlineNames] = useState({});
+  const [inlineEmails, setInlineEmails] = useState({});
+
+  // Prefill name/email for review/answer if user is logged in
+  useEffect(() => {
+    if (user) {
+      setReviewForm(f => ({ ...f, name: user.name || '', email: user.email || '' }));
+      setQuestionForm(f => ({ ...f, name: user.name || '', email: user.email || '' }));
+    }
+  }, [user]);
 
   // Fetch product data from API
   useEffect(() => {
@@ -65,7 +78,7 @@ export default function ProductDetailsPage() {
         try {
           const q = await productAPI.getQuestions(id);
           setQuestions(q || []);
-        } catch {}
+        } catch { }
         // Fetch related products
         try {
           const allProducts = await productAPI.getAllProducts();
@@ -80,7 +93,7 @@ export default function ProductDetailsPage() {
               image: p.productImage || (p.media && p.media[0]?.url) || 'https://via.placeholder.com/300x300?text=' + encodeURIComponent(p.productName)
             }));
           setRelatedProducts(related);
-        } catch {}
+        } catch { }
       } catch (err) {
         setError('Failed to load product details. Please try again later.');
       } finally {
@@ -89,6 +102,14 @@ export default function ProductDetailsPage() {
     };
     fetchProductData();
   }, [id]);
+
+  useEffect(() => {
+    if (!editingAnswer) return;
+    const q = questions.find(q => (q._id || q.questionId) === editingAnswer);
+    if (q && user && q.answererEmail && user.email && q.answererEmail === user.email && q.answer) {
+      setInlineAnswers(a => ({ ...a, [editingAnswer]: q.answer }));
+    }
+  }, [editingAnswer, questions, user]);
 
   const handleQuantityChange = (value) => {
     if (value < 1) return;
@@ -196,9 +217,13 @@ export default function ProductDetailsPage() {
     setQuestionError('');
     setQuestionSuccess('');
     try {
-      await productAPI.addQuestion(id, questionForm);
+      await productAPI.addQuestion(id, {
+        customerName: questionForm.name,
+        customerEmail: questionForm.email,
+        question: questionForm.question,
+      });
       setQuestionSuccess('Question submitted!');
-      setQuestionForm({ name: '', email: '', question: '' });
+      setQuestionForm({ name: user?.name || '', email: user?.email || '', question: '' });
       const q = await productAPI.getQuestions(id);
       setQuestions(q || []);
     } catch (err) {
@@ -233,6 +258,27 @@ export default function ProductDetailsPage() {
       setAnswererNames(names => ({ ...names, [qid]: '' }));
       setAnswerEmails(e => ({ ...e, [qid]: '' }));
       setShowAnswerForm(f => ({ ...f, [qid]: false }));
+    } catch { }
+    setAnswerSubmitting(s => ({ ...s, [qid]: false }));
+  };
+
+  const handleInlineAnswerSubmit = async (qid, currentAnswer) => {
+    const answer = inlineAnswers[qid] || '';
+    const name = inlineNames[qid] || user?.name || '';
+    const email = inlineEmails[qid] || user?.email || '';
+    if (!email || !email.includes('@')) {
+      alert('Please enter a valid email to submit your answer.');
+      return;
+    }
+    setAnswerSubmitting(s => ({ ...s, [qid]: true }));
+    try {
+      await productAPI.answerQuestion(id, qid, answer, name || 'Anonymous', email);
+      const q = await productAPI.getQuestions(id);
+      setQuestions(q || []);
+      setInlineAnswers(a => ({ ...a, [qid]: '' }));
+      setInlineNames(n => ({ ...n, [qid]: '' }));
+      setInlineEmails(em => ({ ...em, [qid]: '' }));
+      setEditingAnswer(null);
     } catch {}
     setAnswerSubmitting(s => ({ ...s, [qid]: false }));
   };
@@ -267,6 +313,8 @@ export default function ProductDetailsPage() {
       </>
     );
   }
+
+  const hasReviewed = product?.reviews?.some(r => r.reviewerEmail === reviewForm.email);
 
   return (
     <>
@@ -305,16 +353,16 @@ export default function ProductDetailsPage() {
                 src={Array.isArray(product.gallery) && product.gallery.length > 0 ? product.gallery[selectedImage] : 'https://via.placeholder.com/600x600?text=No+Image'}
                 alt={product.productName}
                 className="img-fluid rounded"
-                width={520}
-                height={520}
+                width={480}
+                height={480}
                 unoptimized={true}
-                style={{ objectFit: 'contain', maxHeight: 520 }}
+                style={{ objectFit: 'contain', maxHeight: 480 }}
               />
             </div>
             <div className="d-flex flex-wrap gap-2 justify-content-center">
               {(Array.isArray(product.gallery) ? product.gallery : []).map((image, index) => (
-                <div key={index} className={`border rounded-2 p-1 ${selectedImage === index ? 'border-primary' : 'border-light'}`} 
-                style={{ cursor: 'pointer', width: 110, height: 110, background: '#fff' }} onClick={() => handleImageClick(index)}>
+                <div key={index} className={`border rounded-2 p-1 ${selectedImage === index ? 'border-primary' : 'border-light'}`}
+                  style={{ cursor: 'pointer', width: 110, height: 110, background: '#fff' }} onClick={() => handleImageClick(index)}>
                   <Image
                     src={image}
                     alt={`${product.productName} - Image ${index + 1}`}
@@ -330,8 +378,16 @@ export default function ProductDetailsPage() {
           </div>
 
           {/* Info & Buy Box */}
-          <div className="col-lg-6">
-            <h2 className="mb-2" style={{ fontWeight: 600 }}>{product.productName}</h2>
+          <div className="col-lg-6 p-3">
+            <div className="d-flex justify-content-between">
+              <h2 className="mb-2" style={{ fontWeight: 600 }}>{product.productName}</h2>
+              <div className="d-flex gap-2 p-2">
+                <button className="btn btn-outline-secondary "><i className="bi bi-share me-1"></i>Share</button>
+                <button className="btn btn-outline-danger " onClick={handleAddToWishlist}><i className="bi bi-heart"></i></button>
+            
+              </div>
+            </div>
+
             <div className="mb-2">
               <span className="fs-5 text-warning">
                 {[...Array(5)].map((_, i) => (
@@ -362,35 +418,31 @@ export default function ProductDetailsPage() {
                   : [product.productCategory, product.productSubcategory].filter(Boolean).join(', ') || 'N/A'
               }
             </div>
-           
+
             {/* Short Description */}
             {product.shortDescription && <div className="mb-3"><span className="fw-bold">About this item:</span> <span>{product.shortDescription}</span></div>}
             {/* <div className="d-flex align-items-center mb-3"> */}
-             
+
             <div className="d-flex gap-2 mb-3">
-            <div className="input-group" style={{ width: 120 }}>
+              <div className="input-group" style={{ width: 120 }}>
                 <button className="btn btn-outline-secondary" type="button" onClick={() => handleQuantityChange(quantity - 1)}><i className="bi bi-dash"></i></button>
                 <input type="text" className="form-control text-center" value={quantity} readOnly />
                 <button className="btn btn-outline-secondary" type="button" onClick={() => handleQuantityChange(quantity + 1)}><i className="bi bi-plus"></i></button>
               </div>
               <button ref={addToCartBtnRef} className="btn btn-lg w-50" style={{ backgroundColor: '#08A486', color: 'white' }} onClick={handleAddToCart}><i className="bi bi-cart-plus me-2"></i>Add to Cart</button>
-              <button className="btn btn-lg btn-outline-danger w-25" onClick={handleAddToWishlist}><i className="bi bi-heart"></i></button>
             </div>
-        
-            <div className="d-flex gap-2 mt-2">
-              <button className="btn btn-outline-secondary btn-sm"><i className="bi bi-facebook me-1"></i>Share</button>
-             
-            </div>
+
+
             <div className="py-3">
               <span className="fw-bold">Tags:</span>{' '}
               {Array.isArray(product.tags) && product.tags.length > 0
                 ? product.tags.map((tag, idx) => (
-                    <span key={tag} className="badge bg-light text-secondary me-1"># {tag}</span>
-                  ))
+                  <span key={tag} className="badge bg-light text-secondary me-1"># {tag}</span>
+                ))
                 : Array.isArray(product.productTags) && product.productTags.length > 0
                   ? product.productTags.map((tag, idx) => (
-                        <span key={tag} className="badge bg-light text-secondary me-1">#{tag}</span>
-                    ))
+                    <span key={tag} className="badge bg-light text-secondary me-1">#{tag}</span>
+                  ))
                   : <span className="badge bg-light text-secondary">#Organic</span>
               }
             </div>
@@ -402,7 +454,7 @@ export default function ProductDetailsPage() {
           <div className="col-lg-9">
             <div className=" p-3 rounded-3 shadow-sm mb-4">
               <div className="card-body">
-                <h4 className="mb-3">Product Description</h4>
+                <h4 className="mb-3">About this Product</h4>
                 <p>{product.longDescription || product.description || 'No description available.'}</p>
                 <h5 className="mb-2">Key Features</h5>
                 <ul>
@@ -416,7 +468,7 @@ export default function ProductDetailsPage() {
               </div>
             </div>
 
-          
+
             {/* Reviews Section */}
             <div className=" p-3 rounded-3 shadow-sm mb-4">
               <div className="card-body">
@@ -440,53 +492,57 @@ export default function ProductDetailsPage() {
                 {/* Add Review Form */}
                 <div className="mt-4">
                   <h5 className="mb-2">Write a Review</h5>
-                  <form onSubmit={async (e) => {
-                    e.preventDefault();
-                    setReviewSubmitting(true);
-                    try {
-                      await productAPI.addReview(id, {
-                        reviewerName: reviewForm.name,
-                        reviewerEmail: reviewForm.email,
-                        rating: reviewForm.rating,
-                        reviewText: reviewForm.review,
-                        reviewDate: new Date().toISOString(),
-                      });
-                      setReviewForm({ name: '', email: '', rating: 0, review: '' });
-                      const updated = await productAPI.getProductById(id);
-                      setProduct({ ...updated, gallery: product.gallery });
-                    } catch {
-                      // handle error
-                    }
-                    setReviewSubmitting(false);
-                  }}>
-                    <div className="row g-2">
-                      <div className="col-md-4">
-                        <input type="text" className="form-control" placeholder="Your Name*" value={reviewForm.name} onChange={e => setReviewForm(f => ({ ...f, name: e.target.value }))} required />
+                  {hasReviewed ? (
+                    <div className="p-0"></div>
+                  ) : (
+                    <form onSubmit={async (e) => {
+                      e.preventDefault();
+                      setReviewSubmitting(true);
+                      try {
+                        await productAPI.addReview(id, {
+                          reviewerName: reviewForm.name,
+                          reviewerEmail: reviewForm.email,
+                          rating: reviewForm.rating,
+                          reviewText: reviewForm.review,
+                          reviewDate: new Date().toISOString(),
+                        });
+                        setReviewForm({ name: user?.name || '', email: user?.email || '', rating: 0, review: '' });
+                        const updated = await productAPI.getProductById(id);
+                        setProduct({ ...updated, gallery: product.gallery });
+                      } catch {
+                        // handle error
+                      }
+                      setReviewSubmitting(false);
+                    }}>
+                      <div className="row g-2">
+                        <div className="col-md-4">
+                          <input type="text" className="form-control" placeholder="Your Name*" value={reviewForm.name} onChange={e => setReviewForm(f => ({ ...f, name: e.target.value }))} required />
+                        </div>
+                        <div className="col-md-4">
+                          <input type="email" className="form-control" placeholder="Your Email*" value={reviewForm.email} onChange={e => setReviewForm(f => ({ ...f, email: e.target.value }))} required />
+                        </div>
+                        <div className="col-md-4 d-flex align-items-center">
+                          <span className="me-2">Rating*</span>
+                          {[...Array(5)].map((_, i) => (
+                            <i
+                              key={i}
+                              className={`bi ${i < reviewForm.rating ? 'bi-star-fill' : 'bi-star'}`}
+                              style={{ color: '#ffc107', cursor: 'pointer', fontSize: 22 }}
+                              onClick={() => setReviewForm(f => ({ ...f, rating: i + 1 }))}
+                            ></i>
+                          ))}
+                        </div>
                       </div>
-                      <div className="col-md-4">
-                        <input type="email" className="form-control" placeholder="Your Email*" value={reviewForm.email} onChange={e => setReviewForm(f => ({ ...f, email: e.target.value }))} required />
+                      <div className="row g-2 mt-2">
+                        <div className="col-12">
+                          <textarea className="form-control" placeholder="Your Review*" rows={3} value={reviewForm.review} onChange={e => setReviewForm(f => ({ ...f, review: e.target.value }))} required></textarea>
+                        </div>
                       </div>
-                      <div className="col-md-4 d-flex align-items-center">
-                        <span className="me-2">Rating*</span>
-                        {[...Array(5)].map((_, i) => (
-                          <i
-                            key={i}
-                            className={`bi ${i < reviewForm.rating ? 'bi-star-fill' : 'bi-star'}`}
-                            style={{ color: '#ffc107', cursor: 'pointer', fontSize: 22 }}
-                            onClick={() => setReviewForm(f => ({ ...f, rating: i + 1 }))}
-                          ></i>
-                        ))}
+                      <div className="mt-2">
+                        <button type="submit" className="btn btn-success" disabled={reviewSubmitting}>Submit Review</button>
                       </div>
-                    </div>
-                    <div className="row g-2 mt-2">
-                      <div className="col-12">
-                        <textarea className="form-control" placeholder="Your Review*" rows={3} value={reviewForm.review} onChange={e => setReviewForm(f => ({ ...f, review: e.target.value }))} required></textarea>
-                      </div>
-                    </div>
-                    <div className="mt-2">
-                      <button type="submit" className="btn btn-success" disabled={reviewSubmitting}>Submit Review</button>
-                    </div>
-                  </form>
+                    </form>
+                  )}
                 </div>
               </div>
             </div>
@@ -546,30 +602,49 @@ export default function ProductDetailsPage() {
                 <h4 className="mb-3">Customer Questions & Answers</h4>
                 {questions.length === 0 && <div className="alert ">No questions yet. Be the first to ask!</div>}
                 <div className="list-group mb-4">
-                  {questions.map((q, idx) => (
-                    <div key={q._id || q.questionId || idx} className="list-group-item">
-                      <div className="fw-bold">Q: {q.question}</div>
-                      <div className="text-muted small">by {q.customerName || 'Anonymous'}</div>
-                      {q.answer ? (
-                        <div className="mt-2"><span className="fw-bold">A:</span> {q.answer} <span className="text-muted small ms-2">by {q.answererName || 'Anonymous'}</span></div>
-                      ) : (
-                        <>
-                          {!showAnswerForm[q._id || q.questionId] && (
-                            <button className="btn btn-link btn-sm p-0" style={{ fontSize: '0.95em' }} onClick={() => handleShowAnswerForm(q._id || q.questionId)}>Answer this question</button>
-                          )}
-                          {showAnswerForm[q._id || q.questionId] && (
-                            <form className="mt-2 d-flex gap-2 align-items-center flex-wrap" onSubmit={e => { e.preventDefault(); handleAnswerSubmit(q._id || q.questionId, q.answer); }}>
-                              <input type="text" className="form-control" value={q.answer || ''} onChange={e => handleAnswerChange(q._id || q.questionId, e.target.value)} placeholder="Type answer..." required style={{ minWidth: 180 }} />
-                              <input type="text" className="form-control" style={{ maxWidth: 120 }} value={answererNames[q._id || q.questionId] || ''} onChange={e => handleAnswererNameChange(q._id || q.questionId, e.target.value)} placeholder="Your name (optional)" />
-                              <input type="email" className="form-control" style={{ maxWidth: 180 }} value={answerEmails[q._id || q.questionId] || ''} onChange={e => handleAnswerEmailChange(q._id || q.questionId, e.target.value)} placeholder="Your email (required)" required />
-                              <button type="submit" className="btn btn-primary btn-sm" disabled={answerSubmitting[q._id || q.questionId]}>Submit</button>
-                              <button type="button" className="btn btn-link btn-sm text-danger" onClick={() => handleShowAnswerForm(q._id || q.questionId)}>Cancel</button>
-                            </form>
-                          )}
-                        </>
-                      )}
-                    </div>
-                  ))}
+                  {questions.map((q, idx) => {
+                    const qid = q._id || q.questionId;
+                    const userIsAnswerer = user && q.answererEmail && user.email && q.answererEmail === user.email;
+                    const showForm = (!q.answer && (!user || !q.answererEmail || user.email !== q.answererEmail)) || (userIsAnswerer && editingAnswer === qid);
+                    return (
+                      <div key={qid || idx} className="list-group-item">
+                        <div className="fw-bold">Q: {q.question}</div>
+                        <div className="text-muted small">By {q.customerName || 'Anonymous'}</div>
+                        {q.answer ? (
+                          <div className="mt-2">
+                            <span className="fw-bold">A:</span> {q.answer} <span className="text-muted small ms-2">By {q.answererName || 'Anonymous'}</span>
+                            {userIsAnswerer && (
+                              <button className="btn btn-link btn-sm ms-2 p-0" style={{ fontSize: '0.95em' }} onClick={() => { setEditingAnswer(qid); setInlineAnswers(a => ({ ...a, [qid]: q.answer })); }}>Edit Answer</button>
+                            )}
+                          </div>
+                        ) : (
+                          (!user || !q.answererEmail || user.email !== q.answererEmail) && (
+                            <button className="btn btn-link btn-sm p-0" style={{ fontSize: '0.95em' }} onClick={() => setEditingAnswer(qid)}>Answer this question</button>
+                          )
+                        )}
+                        {showForm && (
+                          <form className="mt-2" onSubmit={e => {
+                            e.preventDefault();
+                            handleInlineAnswerSubmit(qid, q.answer);
+                          }}>
+                            <textarea className="form-control mb-2" placeholder="Type your answer..." value={inlineAnswers[qid] || ''} onChange={e => setInlineAnswers(a => ({ ...a, [qid]: e.target.value }))} required rows={2} />
+                            <div className="row g-2">
+                              <div className="col-md-5">
+                                <input type="text" className="form-control" placeholder="Your name (optional)" value={userIsAnswerer ? (q.answererName || user?.name || '') : (inlineNames[qid] || user?.name || '')} onChange={e => setInlineNames(n => ({ ...n, [qid]: e.target.value }))} disabled={userIsAnswerer} />
+                              </div>
+                              <div className="col-md-5">
+                                <input type="email" className="form-control" placeholder="Your email (required)" value={userIsAnswerer ? (q.answererEmail || user?.email || '') : (inlineEmails[qid] || user?.email || '')} onChange={e => setInlineEmails(em => ({ ...em, [qid]: e.target.value }))} required disabled={userIsAnswerer} />
+                              </div>
+                              <div className="col-md-2 d-flex align-items-end">
+                                <button type="submit" className="btn btn-success w-100" disabled={answerSubmitting[qid]}>{userIsAnswerer ? 'Update' : 'Submit'}</button>
+                                <button type="button" className="btn btn-link text-danger ms-2" onClick={() => setEditingAnswer(null)}>Cancel</button>
+                              </div>
+                            </div>
+                          </form>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
                 <div className=" p-3 rounded-3 p-3">
                   <h5>Ask a Question</h5>
@@ -623,7 +698,7 @@ export default function ProductDetailsPage() {
       <Footer />
       {/* Cart Animation Element */}
       {cartAnimation.show && (
-        <div 
+        <div
           className="cart-animation"
           style={{ left: cartAnimation.x, top: cartAnimation.y, position: 'fixed', zIndex: 9999, pointerEvents: 'none', animation: 'cartMove 1s ease-in-out forwards' }}
         >
