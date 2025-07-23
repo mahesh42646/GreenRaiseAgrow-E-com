@@ -1,6 +1,7 @@
 'use client';
 import { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { useCart } from '../../../context/CartContext';
 import { useAuth } from '../../../context/AuthContext';
@@ -28,11 +29,11 @@ export default function Header() {
     const handleOffcanvasToggle = () => setIsOffcanvasOpen(!isOffcanvasOpen);
 
     const navLinks = [
-        { name: 'Home', href: '/', dropdown: true },
-        { name: 'Shop', href: '/shop', dropdown: true },
-        { name: 'Blog', href: '/blog', dropdown: true },
-        { name: 'Cart', href: '/cart', dropdown: true },
-        // { name: 'Pages', href: '/pages', dropdown: true, badge: 'New' },
+        { name: 'Home', href: '/', dropdown: true, icon: 'bi-house-door' },
+        { name: 'Shop', href: '/shop', dropdown: true, icon: 'bi-bag' },
+        { name: 'Blog', href: '/blog', dropdown: true, icon: 'bi-journal-text',  },
+        { name: 'Contact', href: '/contact', dropdown: true, icon: 'bi-telephone' },
+        { name: 'Cart', href: '/cart', dropdown: true, icon: 'bi-cart3', badge: itemCount > 0 ? itemCount : null },
     ];
 
     return (
@@ -47,24 +48,25 @@ export default function Header() {
                         <div className="d-flex align-items-center">
                         <div className="col-auto">
                                 <Link href="/" className="navbar-brand fw-bolder fs-3 text-decoration-none">
-                                    <span style={{ color: '#08A486' }}>Green</span>Raise.
+                                <Image src="/Logo-h.png" alt="GreenRaise" width={100} height={100} style={{ width: 'auto', height: '64px' }} />
                                 </Link>
                             </div>
 
                             <ul className="navbar-nav flex-row px-lg-5">
                                 {navLinks.map(link => (
                                     <li key={link.name} className="nav-item me-lg-4 position-relative">
-                                        <Link href={link.href} className="nav-link fw-bold" style={{
+                                        <Link href={link.href} className="nav-link fw-bold d-flex align-items-center" style={{
                                             color: activeTab === link.href ? '#08A486' : 'inherit',
                                             fontWeight: activeTab === link.href ? 'bold' : 'bold'
                                         }}>
+                                            {link.icon && <i className={`bi ${link.icon} me-2`}></i>}
                                             {link.name}
+                                            {link.badge && (
+                                                <span className="badge bg-danger ms-2 position-absolute top-0 start-100 translate-middle rounded-pill" style={{ fontSize: '0.6em', padding: '0.3em 0.5em', right: '-0.8rem', height: '16px', width: '16px' }}>
+                                                    {link.badge}
+                                                </span>
+                                            )}
                                         </Link>
-                                        {link.badge && (
-                                            <span className="badge bg-danger position-absolute" style={{ fontSize: '0.6em', padding: '0.3em 0.5em', top: '0.2rem', right: '-0.8rem' }}>
-                                                {link.badge}
-                                            </span>
-                                        )}
                                     </li>
                                 ))}
                             </ul>
@@ -74,20 +76,11 @@ export default function Header() {
                                 {/* Icons */}
                                 <div className=" px-3 my-auto pt-1">
                                     <div className="d-flex align-items-center">
-                                        <Link href="/contact" className="text-dark me-3 "><i className="bi bi-telephone fs-4"></i></Link>
-                                        {/* <Link href="/wishlist" className="text-dark me-3 "><i className="bi bi-heart fs-5"></i></Link> */}
-                                        <Link href="/cart" className="text-dark me-3  position-relative">
-                                            <i className="bi bi-cart3 fs-4"></i>
-                                            {itemCount > 0 && (
-                                                <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style={{ fontSize: '0.6em', padding: '0.2em 0.5em' }}>
-                                                    {itemCount}
-                                                </span>
-                                            )}
-                                        </Link>
-                                        <Link href="/account" className="text-dark">
+                                      
+                                        <Link href="/account" className="text-dark d-flex align-items-center border border-dark rounded-pill p-2 shadow-sm" style={{ height: '44px', width: '44px'}}>
                                             <i className="bi bi-person fs-4"></i>
                                             {user && (
-                                                <span className="ms-2 d-none d-xl-inline">
+                                                <span className="ms-2 d-none d-xl-inline border border-dark rounded-pill px-2 py-1">
                                                     {user.name.split(' ')[0]}
                                                 </span>
                                             )}
@@ -107,62 +100,59 @@ export default function Header() {
             </div>
 
             {/* --- Mobile Header --- */}
-            <div className="d-lg-none border-bottom">
-                <div className="container d-flex justify-content-between align-items-center py-2">
-                    <button className="btn" type="button" onClick={handleOffcanvasToggle}>
-                        <i className="bi bi-list fs-3"></i>
+            <div className="d-lg-none border-bottom sticky-top bg-white" style={{ zIndex: 1040 }}>
+                <div className="container-fluid px-2 d-flex justify-content-between align-items-center py-2">
+                    <button className="btn p-0 me-2" type="button" aria-label="Open menu" onClick={handleOffcanvasToggle}>
+                        <i className="bi bi-list fs-2"></i>
                     </button>
-                    <Link href="/" className="navbar-brand fw-bolder fs-3 text-decoration-none">
-                        <span style={{ color: '#08A486' }}>Green</span>Raise.
+                    <Link href="/" className="navbar-brand fw-bolder fs-3 text-decoration-none mx-auto">
+                        <Image src="/Logo-h.png" alt="GreenRaise" width={60} height={60} style={{ height: '48px', width: 'auto' }} />
                     </Link>
-                    <div className="d-flex align-items-center">
-                        <Link href="/cart" className="text-dark me-3 position-relative">
-                            <i className="bi bi-cart3 fs-4"></i>
+                    <div className="d-flex align-items-center ms-auto">
+                        <Link href="/cart" className="text-dark position-relative me-3" aria-label="Cart">
+                            <i className="bi bi-cart3 fs-3"></i>
                             {itemCount > 0 && (
-                                <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style={{ fontSize: '0.6em', padding: '0.2em 0.5em' }}>
+                                <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style={{ fontSize: '0.7em', padding: '0.2em 0.5em' }}>
                                     {itemCount}
                                 </span>
                             )}
                         </Link>
-                        <Link href="/account" className="text-dark">
-                            <i className="bi bi-person fs-4"></i>
+                        <Link href="/account" className="text-dark" aria-label="Account">
+                            <i className="bi bi-person fs-3"></i>
                         </Link>
                     </div>
+                </div>
+                <div className="container-fluid px-2 pb-2 d-flex gap-2">
+                    <button className="btn flex-fill d-flex align-items-center fw-semibold py-2" style={{ backgroundColor: '#08A486', color: 'white' }}>
+                        <i className="bi bi-list-ul me-2"></i> All Categories
+                    </button>
+                    <button className="btn btn-outline-success border-2 fw-bold d-flex flex-fill py-2 align-items-center" style={{ borderColor: '#08A486', color: '#08A486', borderWidth: '1px' }}>
+                        <i className="bi bi-lightning-charge-fill me-2"></i> Deal Today
+                    </button>
                 </div>
             </div>
 
             {/* --- Mobile Offcanvas Menu --- */}
-            <div className={`offcanvas offcanvas-start ${isOffcanvasOpen ? 'show' : ''}`} tabIndex="-1" style={{ visibility: isOffcanvasOpen ? 'visible' : 'hidden' }}>
+            <div className={`offcanvas offcanvas-start ${isOffcanvasOpen ? 'show' : ''}`} tabIndex="-1" style={{ visibility: isOffcanvasOpen ? 'visible' : 'hidden', zIndex: 2000 }}>
                 <div className="offcanvas-header border-bottom">
                     <h5 className="offcanvas-title">Menu</h5>
-                    <button type="button" className="btn-close" onClick={handleOffcanvasToggle}></button>
+                    <button type="button" className="btn-close" aria-label="Close menu" onClick={handleOffcanvasToggle}></button>
                 </div>
-                <div className="offcanvas-body">
+                <div className="offcanvas-body px-3">
                     <ul className="navbar-nav">
                         {navLinks.map(link => (
-                            <li key={link.name} className="nav-item mb-2">
-                                <Link href={link.href} className="text-decoration-none fs-5" onClick={handleOffcanvasToggle}>
-                                    <div className="d-flex align-items-center">
-                                        <span style={{
-                                            color: activeTab === link.href ? '#08A486' : 'inherit',
-                                            fontWeight: activeTab === link.href ? 'bold' : 'normal'
-                                        }}>
-                                            {link.name}
+                            <li key={link.name} className="nav-item mb-2 position-relative">
+                                <Link href={link.href} className="text-decoration-none fs-5 d-flex align-items-center py-2 px-2 rounded" style={{ background: activeTab === link.href ? '#e8f5e8' : 'transparent', color: activeTab === link.href ? '#08A486' : 'inherit', fontWeight: activeTab === link.href ? 'bold' : 'normal' }} onClick={handleOffcanvasToggle}>
+                                    {link.icon && <i className={`bi ${link.icon} me-2`}></i>}
+                                    {link.name}
+                                    {link.badge && (
+                                        <span className="badge bg-danger ms-2 position-absolute top-0 start-100 translate-middle rounded-pill" style={{ fontSize: '0.7em', padding: '0.3em 0.6em', right: '-0.8rem' }}>
+                                            {link.badge}
                                         </span>
-                                        {link.badge && (
-                                            <span className="badge bg-danger ms-2" style={{ fontSize: '0.6em', padding: '0.4em 0.6em' }}>
-                                                {link.badge}
-                                            </span>
-                                        )}
-                                    </div>
+                                    )}
                                 </Link>
                             </li>
                         ))}
-                        <li className="nav-item mb-2">
-                            <Link href="/contact" className="text-decoration-none fs-5" onClick={handleOffcanvasToggle}>
-                                Contact
-                            </Link>
-                        </li>
                         {user ? (
                             <li className="nav-item mt-4">
                                 <div className="d-flex align-items-center">
@@ -180,7 +170,7 @@ export default function Header() {
                     </ul>
                 </div>
             </div>
-            {isOffcanvasOpen && <div className="offcanvas-backdrop fade show" onClick={handleOffcanvasToggle}></div>}
+            {isOffcanvasOpen && <div className="offcanvas-backdrop fade show" style={{ zIndex: 1999 }} onClick={handleOffcanvasToggle}></div>}
         </header>
     );
 }

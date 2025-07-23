@@ -1,5 +1,7 @@
 'use client';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import Image from 'next/image';
 
 export default function Footer() {
   const router = useRouter();
@@ -10,9 +12,9 @@ export default function Footer() {
 
   const handleSocialClick = (platform) => {
     const socialLinks = {
-      facebook: 'https://facebook.com/greenraise',
-      twitter: 'https://twitter.com/greenraise',
-      instagram: 'https://instagram.com/greenraise',
+      facebook: 'https://www.facebook.com/GreenRaiseUrbanGardening/',
+      twitter: 'https://x.com/GreenRaiseUrban',
+      instagram: 'https://www.instagram.com/GreenRaiseUrbanGardening/',
     };
 
     if (socialLinks[platform]) {
@@ -38,22 +40,24 @@ export default function Footer() {
         <div className="row">
           {/* Company Info */}
           <div className="col-md-4 mb-3">
-            <h5 className="fw-bold" style={{ color: '#08A486' }}>GreenRaise</h5>
+          <Link href="/" className="navbar-brand fw-bolder fs-3 text-decoration-none">
+                                <Image src="/Logo-h.png" alt="GreenRaise" width={100} height={100} style={{ width: 'auto', height: '64px' }} />
+                                </Link>
             <p className="text-white">
               Your trusted source for sustainable and eco-friendly products. 
               Making the world greener, one purchase at a time.
             </p>
-            <div className="mt-3">
+            <div className="mt-3 d-flex align-items-center">
               <span className="me-2">Share:</span>
-              <a href="https://facebook.com/greenraise" target="_blank" rel="noopener noreferrer" className="d-inline-block me-2" style={{ border: '1px solid #fff', borderRadius: '50%', width: 32, height: 32, textAlign: 'center', lineHeight: '32px', color: '#fff', fontSize: '1.2rem' }}>
+              <a href="https://www.facebook.com/GreenRaiseUrbanGardening/" target="_blank" rel="noopener noreferrer" className="d-inline-block me-2" style={{ border: '1px solid #fff', borderRadius: '50%', width: 32, height: 32, textAlign: 'center', lineHeight: '32px', color: '#fff', fontSize: '1.2rem' }}>
                 <i className="bi bi-facebook"></i>
               </a>
-              <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" className="d-inline-block me-2" style={{ border: '1px solid #fff', borderRadius: '50%', width: 32, height: 32, textAlign: 'center', lineHeight: '32px', color: '#fff', fontSize: '1.2rem' }}>
-                <i className="bi bi-linkedin"></i>
+              <a href="https://www.instagram.com/GreenRaiseUrbanGardening/" target="_blank" rel="noopener noreferrer" className="d-inline-block me-2" style={{ border: '1px solid #fff', borderRadius: '50%', width: 32, height: 32, textAlign: 'center', lineHeight: '32px', color: '#fff', fontSize: '1.2rem' }}>
+                <i className="bi bi-instagram"></i>
               </a>
-              <a href="https://twitter.com/greenraise" target="_blank" rel="noopener noreferrer" className="d-inline-block" style={{ border: '1px solid #fff', borderRadius: '50%', width: 32, height: 32, textAlign: 'center', lineHeight: '32px', color: '#fff', fontSize: '1.2rem' }}>
+              {/* <a href="https://x.com/GreenRaiseUrban" target="_blank" rel="noopener noreferrer" className="d-inline-block" style={{ border: '1px solid #fff', borderRadius: '50%', width: 32, height: 32, textAlign: 'center', lineHeight: '32px', color: '#fff', fontSize: '1.2rem' }}>
                 <i className="bi bi-twitter-x"></i>
-              </a>
+              </a> */}
             </div>
           </div>
 
@@ -74,8 +78,8 @@ export default function Footer() {
             <h6 className="fw-bold" style={{ color: '#FFA53B' }}>Customer Service</h6>
             <ul className="list-unstyled">
               <li onClick={() => handleNavigate('/terms-condition')} className="text-white text-decoration-none" style={{ cursor: 'pointer' }}>Terms & Condition</li>
-              <li onClick={() => handleNavigate('/shipping-delivery-policys')} className="text-white text-decoration-none" style={{ cursor: 'pointer' }}>Shipping Info</li>
-              <li onClick={() => handleNavigate('/refund-payment-policys')} className="text-white text-decoration-none" style={{ cursor: 'pointer' }}>Refund Policy</li>
+              <li onClick={() => handleNavigate('/shipping-and-delivery')} className="text-white text-decoration-none" style={{ cursor: 'pointer' }}>Shipping Info</li>
+              <li onClick={() => handleNavigate('/cancellation-and-refund')} className="text-white text-decoration-none" style={{ cursor: 'pointer' }}>Refund Policy</li>
               <li onClick={() => handleNavigate('/privacy-policy')} className="text-white text-decoration-none" style={{ cursor: 'pointer' }}>Privacy Policy</li>
             </ul>
           </div>
@@ -106,7 +110,7 @@ export default function Footer() {
            
             <div className="mb-2 d-flex align-items-center">
               <i className="bi bi-telephone-fill me-2" style={{ color: '#FFA53B', fontSize: '1.3rem' }}></i>
-              <span className="fw-bold">08048988846</span>
+              <span className="fw-bold">8048988846</span>
             </div>
            
           </div>

@@ -152,7 +152,7 @@ export const adminOrdersAPI = {
         id: 1,
         name: 'John Doe',
         email: 'john.doe@example.com',
-        phone: '555-123-4567'
+        phone: '8048988846'
       },
       date: '2023-05-15',
       status: 'Delivered',

@@ -212,6 +212,8 @@ module.exports = function(io) {
       const question = product.questions.id(req.params.questionId);
       if (!question) return res.status(404).json({ message: 'Question not found' });
       question.answer = req.body.answer;
+      question.answererName = req.body.answererName || 'Anonymous';
+      question.answererEmail = req.body.answererEmail || '';
       await product.save();
       res.status(200).json(question);
     } catch (error) {

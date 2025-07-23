@@ -1,5 +1,6 @@
 'use client';
-
+import Header from '../eng/components/header'; 
+import Footer from '../eng/components/footer';
 import { useState } from 'react';
 import Link from 'next/link';
 
@@ -29,6 +30,7 @@ export default function PrivacyPolicy() {
 
   return (
     <div className="min-vh-100" style={{ backgroundColor: '#f8f9fa' }}>
+      <Header/> 
       {/* Header */}
       <div className="bg-white shadow-sm border-bottom">
         <div className="container">
@@ -342,7 +344,7 @@ export default function PrivacyPolicy() {
                       <h4 className="h5 fw-semibold text-dark mb-3">GreenRaise</h4>
                       <ul className="list-unstyled mb-0">
                         <li className="mb-2"><strong>Email:</strong> privacy@greenraise.com</li>
-                        <li className="mb-2"><strong>Phone:</strong> +1 (555) 123-4567</li>
+                        <li className="mb-2"><strong>Phone:</strong> +91 8048988846</li>
                         <li className="mb-2"><strong>Address:</strong> 123 Eco Street, Green City, GC 12345</li>
                         <li><strong>Website:</strong> <Link href="/contact" className="text-success text-decoration-none">Contact Form</Link></li>
                       </ul>
@@ -355,18 +357,13 @@ export default function PrivacyPolicy() {
                 </section>
 
                 {/* Footer */}
-                <div className="border-top pt-4 mt-5">
-                  <p className="text-center text-muted small mb-0">
-                    © {new Date().getFullYear()} GreenRaise. All rights reserved. | 
-                    <Link href="/Terms-condition" className="text-success text-decoration-none ms-2">Terms & Conditions</Link> | 
-                    <Link href="/Refund-PaymentPolicys" className="text-success text-decoration-none ms-2">Refund Policy</Link>
-                  </p>
-                </div>
+               
               </div>
             </div>
           </div>
         </div>
       </div>
+      <Footer/> 
     </div>
   );
 }

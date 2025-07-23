@@ -172,7 +172,6 @@ export default function ContactPage() {
           <div className="col-lg-5">
             <div className="ps-lg-5">
               <h3 className="mb-4">Get In Touch</h3>
-              
               <div className="d-flex mb-4">
                 <div className="flex-shrink-0">
                   <div className="rounded-circle p-3" style={{ backgroundColor: '#08A48620' }}>
@@ -180,11 +179,14 @@ export default function ContactPage() {
                   </div>
                 </div>
                 <div className="ms-3">
-                  <h5>Our Location</h5>
-                  <p className="text-muted mb-0">123 Green Street, Eco City</p>
+                  <h5>Chandrakant Jadhav (Partner)</h5>
+                  <div className="fw-semibold">Green Rise Agro Industries</div>
+                  <p className="text-muted mb-1">Survey No. 13, Office No. 6, Shivanand Complex, Satavwadi<br />Hadapsar, Pune - 411028, Maharashtra, India</p>
+                  <a href="https://maps.google.com/?q=Survey+No.+13,+Office+No.+6,+Shivanand+Complex,+Satavwadi,+Hadapsar,+Pune+-+411028,+Maharashtra,+India" target="_blank" rel="noopener noreferrer" className="d-inline-flex align-items-center fw-bold" style={{ color: '#08A486' }}>
+                    Get Directions <span className="ms-1" style={{ fontSize: '1.2em' }}>&#8594;</span>
+                  </a>
                 </div>
               </div>
-              
               <div className="d-flex mb-4">
                 <div className="flex-shrink-0">
                   <div className="rounded-circle p-3" style={{ backgroundColor: '#08A48620' }}>
@@ -193,22 +195,9 @@ export default function ContactPage() {
                 </div>
                 <div className="ms-3">
                   <h5>Phone Number</h5>
-                  <p className="text-muted mb-0">+1 (555) 123-4567</p>
+                  <p className="text-muted mb-0">8048988846</p>
                 </div>
               </div>
-              
-              <div className="d-flex mb-4">
-                <div className="flex-shrink-0">
-                  <div className="rounded-circle p-3" style={{ backgroundColor: '#08A48620' }}>
-                    <i className="bi bi-envelope fs-4" style={{ color: '#08A486' }}></i>
-                  </div>
-                </div>
-                <div className="ms-3">
-                  <h5>Email Address</h5>
-                  <p className="text-muted mb-0">info@greenraise.com</p>
-                </div>
-              </div>
-              
               <div className="d-flex mb-4">
                 <div className="flex-shrink-0">
                   <div className="rounded-circle p-3" style={{ backgroundColor: '#08A48620' }}>
@@ -221,7 +210,6 @@ export default function ContactPage() {
                   <p className="text-muted mb-0">Saturday: 10am to 2pm</p>
                 </div>
               </div>
-              
               <div className="mt-5">
                 <h5 className="mb-3">Follow Us</h5>
                 <div className="d-flex">

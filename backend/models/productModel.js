@@ -72,6 +72,8 @@ const productSchema = new mongoose.Schema({
     customerEmail: { type: String },
     question: { type: String, required: true },
     answer: { type: String },
+    answererName: { type: String }, // NEW: who answered
+    answererEmail: { type: String }, // NEW: email of answerer
     askedAt: { type: Date, default: Date.now }
   }],
 }, { timestamps: true });

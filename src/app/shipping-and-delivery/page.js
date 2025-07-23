@@ -1,5 +1,6 @@
 'use client';
-
+import Header from '../eng/components/header'; 
+import Footer from '../eng/components/footer';
 import { useState } from 'react';
 import Link from 'next/link';
 
@@ -29,6 +30,7 @@ export default function ShippingDeliveryPolicies() {
 
   return (
     <div className="min-vh-100" style={{ backgroundColor: '#f8f9fa' }}>
+      <Header/> 
       {/* Header */}
       <div className="bg-white shadow-sm border-bottom">
         <div className="container">
@@ -439,7 +441,7 @@ export default function ShippingDeliveryPolicies() {
                             <p className="mb-2">Available Monday-Friday, 8 AM - 8 PM EST</p>
                             <p className="mb-3">
                               <i className="bi bi-telephone me-2"></i>
-                              +1 (555) 123-4567
+                             +91 8048988846
                             </p>
                             <p className="mb-0">
                               <i className="bi bi-envelope me-2"></i>
@@ -474,6 +476,7 @@ export default function ShippingDeliveryPolicies() {
           </div>
         </div>
       </div>
+      <Footer/> 
     </div>
   );
 }

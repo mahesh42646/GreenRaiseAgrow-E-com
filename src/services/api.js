@@ -81,9 +81,9 @@ export const productAPI = {
     method: 'POST',
     body: JSON.stringify(question),
   }),
-  answerQuestion: (productId, questionId, answer) => fetchAPI(`/products/${productId}/questions/${questionId}`, {
+  answerQuestion: (productId, questionId, answer, answererName, answererEmail) => fetchAPI(`/products/${productId}/questions/${questionId}`, {
     method: 'PUT',
-    body: JSON.stringify({ answer }),
+    body: JSON.stringify({ answer, answererName, answererEmail }),
   }),
 };
 

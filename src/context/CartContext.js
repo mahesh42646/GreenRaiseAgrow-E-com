@@ -96,12 +96,13 @@ export function CartProvider({ children }) {
       const existingItemIndex = currentCart.findIndex(item => item.productId === product.id);
       
       let newCartItems;
+      const addQty = Number(product.quantity) > 0 ? Number(product.quantity) : 1;
       
       if (existingItemIndex >= 0) {
         // Increase quantity if product already in cart
         newCartItems = currentCart.map((item, index) => 
           index === existingItemIndex 
-            ? { ...item, quantity: item.quantity + 1 }
+            ? { ...item, quantity: item.quantity + addQty }
             : item
         );
       } else {
@@ -111,7 +112,7 @@ export function CartProvider({ children }) {
           name: product.name,
           price: product.price,
           image: product.image,
-          quantity: 1,
+          quantity: addQty,
           addedAt: new Date().toISOString()
         };
         newCartItems = [...currentCart, newItem];
@@ -125,7 +126,7 @@ export function CartProvider({ children }) {
         try {
           await profileAPI.addToCart(user.userId, {
             productId: product.id,
-            quantity: 1
+            quantity: addQty
           });
         } catch (err) {
           console.error('Error syncing cart with backend:', err);

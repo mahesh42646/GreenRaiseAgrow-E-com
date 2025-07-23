@@ -34,9 +34,34 @@ export default function Home() {
   const popularProducts = products.filter((p) => p.isBestSeller).slice(0, 4);
 
   const testimonials = [
-    { id: 1, name: "Sarah Johnson", role: "Eco Enthusiast", text: "GreenRaise has completely transformed how I shop for everyday items. Their products are not only sustainable but also high quality!", avatar: "https://themes.pixelstrap.com/fastkart/assets/images/vegetable/product/1.png" },
-    { id: 2, name: "Michael Chen", role: "Environmental Activist", text: "I love that I can find all my eco-friendly essentials in one place. The customer service is exceptional too!", avatar: "https://themes.pixelstrap.com/fastkart/assets/images/vegetable/product/1.png" },
-    { id: 3, name: "Emma Wilson", role: "Sustainable Living Blogger", text: "As someone who writes about sustainable living, I can confidently say GreenRaise offers some of the best eco-products on the market.", avatar: "https://themes.pixelstrap.com/fastkart/assets/images/vegetable/product/1.png" }
+    {
+      id: 1,
+      name: "Anonymous Farmer",
+      role: "Progressive Grower",
+      text: "Since we started using their Organic Vermicompost and Humic Acid Powder, our soil health has visibly improved — crops are greener and yields have increased. The team is also very responsive to our needs.",
+      avatar: "/t1.png"
+    },
+    {
+      id: 2,
+      name: "Agro Supplier",
+      role: "Distributor",
+      text: "Green Rise Agro’s range of Micronutrient Fertilizers and Seaweed Extract Powder helped us address nutrient deficiencies quickly. Quality packaging and timely delivery made the whole purchase experience smooth.",
+      avatar: "/t1.png"
+    },
+    {
+      id: 3,
+      name: "Farm Owner",
+      role: "Commercial Producer",
+      text: "We’ve been sourcing NPK blends and Organic Compost from them for several months. The price is competitive and the products consistently perform well in our fields — boosting plant growth and resilience.",
+      avatar: "/t1.png"
+    }
+    // {
+    //   id: 4,
+    //   name: "Agronomist",
+    //   role: "Technical Advisor",
+    //   text: "Excellent customer support! From helping choose the right fertilizer mix (like Potassium Fulvate 80%) to answering technical questions, the staff guided us every step of the way.",
+    //   avatar: "https://themes.pixelstrap.com/fastkart/assets/images/vegetable/product/1.png"
+    // }
   ];
 
   const faqs = [
@@ -265,7 +290,7 @@ export default function Home() {
                             alt={testimonial.name}
                             fill
                             className="rounded-circle"
-                            style={{ objectFit: 'cover' }}
+                            style={{ objectFit: 'cover'}}
                           />
                         </div>
                         <div className="text-start ms-3">
@@ -349,14 +374,14 @@ export default function Home() {
             <h2 className="fw-bold py-2">Who We Are</h2>
             <div className="row ">
 
-              <div className="col-md-6  p-2">
+              <div className="col-md-  p-2">
                 <h4 className="fw-bold mb-3" style={{ color: '#08A486' }}>Empowering Sustainable Choices</h4>
                 <p className="lead">GreenRaise is a passionate team dedicated to making eco-friendly living accessible and enjoyable for everyone. We carefully curate products that are good for you and the planet, and we believe in transparency, quality, and community impact.</p>
                 <p className="lead">GreenRaise is a passionate team dedicated to making eco-friendly living accessible and enjoyable for everyone. We carefully curate products that are good for you and the planet, and we believe in transparency, quality, and community impact.</p>
               </div>
-              <div className="col-md-6 mb-4 mb-md-0 border">
+              {/* <div className="col-md-6 mb-4 mb-md-0 border">
                 <Image src="/globe.svg" alt="Who We Are" width={400} height={300} style={{ objectFit: 'contain' }} />
-              </div>
+              </div> */}
             </div>
           </div>
         </section>

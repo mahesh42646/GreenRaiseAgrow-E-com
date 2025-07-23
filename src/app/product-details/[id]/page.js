@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Header from '../../eng/components/header';
@@ -38,6 +38,11 @@ export default function ProductDetailsPage() {
   const [questionError, setQuestionError] = useState('');
   const [questionSuccess, setQuestionSuccess] = useState('');
   const [answerSubmitting, setAnswerSubmitting] = useState({});
+  const [cartAnimation, setCartAnimation] = useState({ show: false, x: 0, y: 0, endX: 0, endY: 0 });
+  const addToCartBtnRef = useRef(null);
+  const [answererNames, setAnswererNames] = useState({});
+  const [showAnswerForm, setShowAnswerForm] = useState({});
+  const [answerEmails, setAnswerEmails] = useState({});
 
   // Fetch product data from API
   useEffect(() => {
@@ -91,15 +96,40 @@ export default function ProductDetailsPage() {
     setQuantity(value);
   };
 
-  const handleAddToCart = () => {
+  const handleAddToCart = (event) => {
     if (product) {
-      addToCart(product, quantity);
+      // Animation logic
+      const button = event?.currentTarget || addToCartBtnRef.current;
+      if (button) {
+        const rect = button.getBoundingClientRect();
+        const startX = rect.left + rect.width / 2;
+        const startY = rect.top + rect.height / 2;
+        const cartButton = document.querySelector('a[href="/cart"] i.bi-cart3');
+        let endX, endY;
+        if (cartButton) {
+          const cartRect = cartButton.getBoundingClientRect();
+          endX = cartRect.left + cartRect.width / 2;
+          endY = cartRect.top + cartRect.height / 2;
+        } else {
+          endX = window.innerWidth - 60;
+          endY = 80;
+        }
+        setCartAnimation({ show: true, x: startX, y: startY, endX, endY });
+        setTimeout(() => setCartAnimation({ show: false, x: 0, y: 0, endX: 0, endY: 0 }), 1000);
+      }
+      addToCart({
+        id: product.productId,
+        name: product.productName,
+        price: product.discountedPrice || product.actualPrice,
+        image: product.productImage || (Array.isArray(product.gallery) && product.gallery[0]) || 'https://via.placeholder.com/150',
+        quantity,
+      });
     }
   };
 
   const handleAddToWishlist = () => {
     // In a real app, this would add the product to a wishlist context/state
-    alert(`Added ${product.name} to wishlist!`);
+    alert(`Added ${product.productName} to wishlist!`);
   };
 
   const handleImageClick = (index) => {
@@ -180,12 +210,29 @@ export default function ProductDetailsPage() {
   const handleAnswerChange = (qid, value) => {
     setQuestions(questions.map(q => q._id === qid || q.questionId === qid ? { ...q, answer: value } : q));
   };
+  const handleAnswererNameChange = (qid, value) => {
+    setAnswererNames(names => ({ ...names, [qid]: value }));
+  };
+  const handleShowAnswerForm = (qid) => {
+    setShowAnswerForm(f => ({ ...f, [qid]: !f[qid] }));
+  };
+  const handleAnswerEmailChange = (qid, value) => {
+    setAnswerEmails(e => ({ ...e, [qid]: value }));
+  };
   const handleAnswerSubmit = async (qid, answer) => {
     setAnswerSubmitting(s => ({ ...s, [qid]: true }));
     try {
-      await productAPI.answerQuestion(id, qid, answer);
+      if (!answerEmails[qid] || !answerEmails[qid].includes('@')) {
+        setAnswerSubmitting(s => ({ ...s, [qid]: false }));
+        alert('Please enter a valid email to submit your answer.');
+        return;
+      }
+      await productAPI.answerQuestion(id, qid, answer, answererNames[qid] || 'Anonymous', answerEmails[qid]);
       const q = await productAPI.getQuestions(id);
       setQuestions(q || []);
+      setAnswererNames(names => ({ ...names, [qid]: '' }));
+      setAnswerEmails(e => ({ ...e, [qid]: '' }));
+      setShowAnswerForm(f => ({ ...f, [qid]: false }));
     } catch {}
     setAnswerSubmitting(s => ({ ...s, [qid]: false }));
   };
@@ -244,7 +291,7 @@ export default function ProductDetailsPage() {
               )}
             </li>
             <li className="breadcrumb-item active" aria-current="page">
-              {product.name}
+              {product.productName}
             </li>
           </ol>
         </nav>
@@ -252,16 +299,16 @@ export default function ProductDetailsPage() {
         {/* Main Product Section */}
         <div className="row g-4 mb-4">
           {/* Images */}
-          <div className="col-lg-7">
+          <div className="col-lg-6">
             <div className="border rounded-3 bg-white p-3 mb-2 text-center">
               <Image
                 src={Array.isArray(product.gallery) && product.gallery.length > 0 ? product.gallery[selectedImage] : 'https://via.placeholder.com/600x600?text=No+Image'}
-                alt={product.name}
+                alt={product.productName}
                 className="img-fluid rounded"
-                width={720}
-                height={720}
+                width={520}
+                height={520}
                 unoptimized={true}
-                style={{ objectFit: 'contain', maxHeight: 720 }}
+                style={{ objectFit: 'contain', maxHeight: 520 }}
               />
             </div>
             <div className="d-flex flex-wrap gap-2 justify-content-center">
@@ -270,7 +317,7 @@ export default function ProductDetailsPage() {
                 style={{ cursor: 'pointer', width: 110, height: 110, background: '#fff' }} onClick={() => handleImageClick(index)}>
                   <Image
                     src={image}
-                    alt={`${product.name} - Image ${index + 1}`}
+                    alt={`${product.productName} - Image ${index + 1}`}
                     className=" rounded"
                     width={100}
                     height={100}
@@ -283,8 +330,8 @@ export default function ProductDetailsPage() {
           </div>
 
           {/* Info & Buy Box */}
-          <div className="col-lg-5">
-            <h2 className="mb-2" style={{ fontWeight: 600 }}>{product.name}</h2>
+          <div className="col-lg-6">
+            <h2 className="mb-2" style={{ fontWeight: 600 }}>{product.productName}</h2>
             <div className="mb-2">
               <span className="fs-5 text-warning">
                 {[...Array(5)].map((_, i) => (
@@ -306,7 +353,7 @@ export default function ProductDetailsPage() {
               <span className="fw-bold">Stock:</span> {product.stock > 0 ? <span className="text-success">In Stock</span> : <span className="text-danger">Out of Stock</span>}
             </div>
             <div className="mb-2">
-              <span className="fw-bold">SKU:</span> {product.sku || 'N/A'}
+              <span className="fw-bold">SKU:</span> {product.skuNo || 'N/A'}
             </div>
             <div className="mb-2">
               <span className="fw-bold">Categories:</span> {
@@ -315,39 +362,37 @@ export default function ProductDetailsPage() {
                   : [product.productCategory, product.productSubcategory].filter(Boolean).join(', ') || 'N/A'
               }
             </div>
-            <div className="mb-2">
-              <span className="fw-bold">Tags:</span> {
-                Array.isArray(product.tags) && product.tags.length > 0
-                  ? product.tags.join(', ')
-                  : Array.isArray(product.productTags) && product.productTags.length > 0
-                    ? product.productTags.join(', ')
-                    : 'N/A'
-              }
-            </div>
+           
             {/* Short Description */}
             {product.shortDescription && <div className="mb-3"><span className="fw-bold">About this item:</span> <span>{product.shortDescription}</span></div>}
-            <div className="d-flex align-items-center mb-3">
-              <span className="me-2">Quantity:</span>
-              <div className="input-group" style={{ width: 120 }}>
+            {/* <div className="d-flex align-items-center mb-3"> */}
+             
+            <div className="d-flex gap-2 mb-3">
+            <div className="input-group" style={{ width: 120 }}>
                 <button className="btn btn-outline-secondary" type="button" onClick={() => handleQuantityChange(quantity - 1)}><i className="bi bi-dash"></i></button>
                 <input type="text" className="form-control text-center" value={quantity} readOnly />
                 <button className="btn btn-outline-secondary" type="button" onClick={() => handleQuantityChange(quantity + 1)}><i className="bi bi-plus"></i></button>
               </div>
-            </div>
-            <div className="d-flex gap-2 mb-3">
-              <button className="btn btn-lg w-50" style={{ backgroundColor: '#08A486', color: 'white' }} onClick={handleAddToCart}><i className="bi bi-cart-plus me-2"></i>Add to Cart</button>
+              <button ref={addToCartBtnRef} className="btn btn-lg w-50" style={{ backgroundColor: '#08A486', color: 'white' }} onClick={handleAddToCart}><i className="bi bi-cart-plus me-2"></i>Add to Cart</button>
               <button className="btn btn-lg btn-outline-danger w-25" onClick={handleAddToWishlist}><i className="bi bi-heart"></i></button>
             </div>
-            <div className="mb-2">
-              <i className="bi bi-truck me-2"></i>Free shipping on orders over ₹500
-            </div>
-            <div className="mb-2">
-              <i className="bi bi-arrow-repeat me-2"></i>30-day returns
-            </div>
+        
             <div className="d-flex gap-2 mt-2">
               <button className="btn btn-outline-secondary btn-sm"><i className="bi bi-facebook me-1"></i>Share</button>
-              <button className="btn btn-outline-secondary btn-sm"><i className="bi bi-twitter me-1"></i>Tweet</button>
-              <button className="btn btn-outline-secondary btn-sm"><i className="bi bi-pinterest me-1"></i>Pin</button>
+             
+            </div>
+            <div className="py-3">
+              <span className="fw-bold">Tags:</span>{' '}
+              {Array.isArray(product.tags) && product.tags.length > 0
+                ? product.tags.map((tag, idx) => (
+                    <span key={tag} className="badge bg-light text-secondary me-1"># {tag}</span>
+                  ))
+                : Array.isArray(product.productTags) && product.productTags.length > 0
+                  ? product.productTags.map((tag, idx) => (
+                        <span key={tag} className="badge bg-light text-secondary me-1">#{tag}</span>
+                    ))
+                  : <span className="badge bg-light text-secondary">#Organic</span>
+              }
             </div>
           </div>
         </div>
@@ -355,7 +400,7 @@ export default function ProductDetailsPage() {
         {/* Description Section */}
         <div className="row mb-4">
           <div className="col-lg-9">
-            <div className="card shadow-sm mb-4">
+            <div className=" p-3 rounded-3 shadow-sm mb-4">
               <div className="card-body">
                 <h4 className="mb-3">Product Description</h4>
                 <p>{product.longDescription || product.description || 'No description available.'}</p>
@@ -371,27 +416,9 @@ export default function ProductDetailsPage() {
               </div>
             </div>
 
-            {/* Specifications Section */}
-            <div className="card shadow-sm mb-4">
-              <div className="card-body">
-                <h4 className="mb-3">Specifications</h4>
-                {Array.isArray(product.specifications) && product.specifications.length > 0 ? (
-                  <table className="table table-bordered">
-                    <tbody>
-                      {product.specifications.map((spec, index) => (
-                        <tr key={index}>
-                          <th style={{ width: '30%' }}>{spec.name}</th>
-                          <td>{spec.value}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                ) : <div className="text-muted">No specifications listed.</div>}
-              </div>
-            </div>
-
+          
             {/* Reviews Section */}
-            <div className="card shadow-sm mb-4">
+            <div className=" p-3 rounded-3 shadow-sm mb-4">
               <div className="card-body">
                 <h4 className="mb-3">Customer Reviews</h4>
                 {product.reviews && product.reviews.length > 0 ? (
@@ -409,7 +436,7 @@ export default function ProductDetailsPage() {
                       <div>{review.reviewText}</div>
                     </div>
                   ))
-                ) : <div className="alert alert-info">No reviews yet. Be the first to review this product!</div>}
+                ) : <div className="alert ">No reviews yet. Be the first to review this product!</div>}
                 {/* Add Review Form */}
                 <div className="mt-4">
                   <h5 className="mb-2">Write a Review</h5>
@@ -465,10 +492,10 @@ export default function ProductDetailsPage() {
             </div>
 
             {/* FAQ Section */}
-            <div className="card shadow-sm mb-4">
+            <div className=" p-3 rounded-3 shadow-sm mb-4">
               <div className="card-body">
                 <h4 className="mb-3">Frequently Asked Questions</h4>
-                {faqs.length === 0 && <div className="alert alert-info">No FAQs for this product yet.</div>}
+                {faqs.length === 0 && <div className="alert ">No FAQs for this product yet.</div>}
                 <div className="accordion" id="faqAccordion">
                   {faqs.map((faq, idx) => (
                     <div key={faq._id || faq.faqId || idx} className="accordion-item">
@@ -514,29 +541,37 @@ export default function ProductDetailsPage() {
             </div>
 
             {/* Questions Section */}
-            <div className="card shadow-sm mb-4">
+            <div className=" p-3 rounded-3 shadow-sm mb-4">
               <div className="card-body">
                 <h4 className="mb-3">Customer Questions & Answers</h4>
-                {questions.length === 0 && <div className="alert alert-info">No questions yet. Be the first to ask!</div>}
+                {questions.length === 0 && <div className="alert ">No questions yet. Be the first to ask!</div>}
                 <div className="list-group mb-4">
                   {questions.map((q, idx) => (
                     <div key={q._id || q.questionId || idx} className="list-group-item">
                       <div className="fw-bold">Q: {q.question}</div>
-                      <div className="text-muted small">by {q.name || 'Anonymous'}</div>
+                      <div className="text-muted small">by {q.customerName || 'Anonymous'}</div>
                       {q.answer ? (
-                        <div className="mt-2"><span className="fw-bold">A:</span> {q.answer}</div>
-                      ) : user?.role === 'admin' ? (
-                        <form className="mt-2 d-flex gap-2 align-items-center" onSubmit={e => { e.preventDefault(); handleAnswerSubmit(q._id || q.questionId, q.answer); }}>
-                          <input type="text" className="form-control" value={q.answer || ''} onChange={e => handleAnswerChange(q._id || q.questionId, e.target.value)} placeholder="Type answer..." required />
-                          <button type="submit" className="btn btn-primary btn-sm" disabled={answerSubmitting[q._id || q.questionId]}>Submit</button>
-                        </form>
+                        <div className="mt-2"><span className="fw-bold">A:</span> {q.answer} <span className="text-muted small ms-2">by {q.answererName || 'Anonymous'}</span></div>
                       ) : (
-                        <div className="mt-2 text-muted">No answer yet.</div>
+                        <>
+                          {!showAnswerForm[q._id || q.questionId] && (
+                            <button className="btn btn-link btn-sm p-0" style={{ fontSize: '0.95em' }} onClick={() => handleShowAnswerForm(q._id || q.questionId)}>Answer this question</button>
+                          )}
+                          {showAnswerForm[q._id || q.questionId] && (
+                            <form className="mt-2 d-flex gap-2 align-items-center flex-wrap" onSubmit={e => { e.preventDefault(); handleAnswerSubmit(q._id || q.questionId, q.answer); }}>
+                              <input type="text" className="form-control" value={q.answer || ''} onChange={e => handleAnswerChange(q._id || q.questionId, e.target.value)} placeholder="Type answer..." required style={{ minWidth: 180 }} />
+                              <input type="text" className="form-control" style={{ maxWidth: 120 }} value={answererNames[q._id || q.questionId] || ''} onChange={e => handleAnswererNameChange(q._id || q.questionId, e.target.value)} placeholder="Your name (optional)" />
+                              <input type="email" className="form-control" style={{ maxWidth: 180 }} value={answerEmails[q._id || q.questionId] || ''} onChange={e => handleAnswerEmailChange(q._id || q.questionId, e.target.value)} placeholder="Your email (required)" required />
+                              <button type="submit" className="btn btn-primary btn-sm" disabled={answerSubmitting[q._id || q.questionId]}>Submit</button>
+                              <button type="button" className="btn btn-link btn-sm text-danger" onClick={() => handleShowAnswerForm(q._id || q.questionId)}>Cancel</button>
+                            </form>
+                          )}
+                        </>
                       )}
                     </div>
                   ))}
                 </div>
-                <div className="card p-3">
+                <div className=" p-3 rounded-3 p-3">
                   <h5>Ask a Question</h5>
                   {questionError && <div className="alert alert-danger">{questionError}</div>}
                   {questionSuccess && <div className="alert alert-success">{questionSuccess}</div>}
@@ -564,7 +599,7 @@ export default function ProductDetailsPage() {
 
           {/* Side Related Products */}
           <div className="col-lg-3 d-none d-lg-block">
-            <div className="card shadow-sm mb-4">
+            <div className=" p-3 rounded-3 shadow-sm mb-4">
               <div className="card-body">
                 <h5 className="mb-3">Related Products</h5>
                 {relatedProducts.length > 0 ? (
@@ -586,6 +621,44 @@ export default function ProductDetailsPage() {
         </div>
       </div>
       <Footer />
+      {/* Cart Animation Element */}
+      {cartAnimation.show && (
+        <div 
+          className="cart-animation"
+          style={{ left: cartAnimation.x, top: cartAnimation.y, position: 'fixed', zIndex: 9999, pointerEvents: 'none', animation: 'cartMove 1s ease-in-out forwards' }}
+        >
+          <div className="cart-icon">
+            <Image src={product?.productImage || '/cart.png'} alt="cart" width={40} height={40} style={{ borderRadius: 8 }} />
+          </div>
+        </div>
+      )}
+      <style jsx global>{`
+        .cart-icon {
+          background: #08A486;
+          color: white;
+          border-radius: 50%;
+          width: 40px;
+          height: 40px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          box-shadow: 0 4px 12px rgba(8, 164, 134, 0.3);
+        }
+        @keyframes cartMove {
+          0% {
+            transform: translate(0, 0) scale(1);
+            opacity: 1;
+          }
+          50% {
+            transform: translate(${cartAnimation.endX - cartAnimation.x}px, ${cartAnimation.endY - cartAnimation.y}px) scale(1.2);
+            opacity: 0.8;
+          }
+          100% {
+            transform: translate(${cartAnimation.endX - cartAnimation.x}px, ${cartAnimation.endY - cartAnimation.y}px) scale(0.8);
+            opacity: 0;
+          }
+        }
+      `}</style>
     </>
   );
 }
