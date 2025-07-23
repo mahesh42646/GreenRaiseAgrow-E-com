@@ -361,8 +361,8 @@ export default function ProductDetailsPage() {
             </div>
             <div className="d-flex flex-wrap gap-2 justify-content-center">
               {(Array.isArray(product.gallery) ? product.gallery : []).map((image, index) => (
-                <div key={index} className={`border rounded-2 p-1 ${selectedImage === index ? 'border-primary' : 'border-light'}`}
-                  style={{ cursor: 'pointer', width: 110, height: 110, background: '#fff' }} onClick={() => handleImageClick(index)}>
+                <div key={index} className={`border rounded-2 p-1 ${selectedImage === index ? 'border-primary' : 'border-light'}`} 
+                style={{ cursor: 'pointer', width: 110, height: 110, background: '#fff' }} onClick={() => handleImageClick(index)}>
                   <Image
                     src={image}
                     alt={`${product.productName} - Image ${index + 1}`}
@@ -495,53 +495,53 @@ export default function ProductDetailsPage() {
                   {hasReviewed ? (
                     <div className="p-0"></div>
                   ) : (
-                    <form onSubmit={async (e) => {
-                      e.preventDefault();
-                      setReviewSubmitting(true);
-                      try {
-                        await productAPI.addReview(id, {
-                          reviewerName: reviewForm.name,
-                          reviewerEmail: reviewForm.email,
-                          rating: reviewForm.rating,
-                          reviewText: reviewForm.review,
-                          reviewDate: new Date().toISOString(),
-                        });
+                  <form onSubmit={async (e) => {
+                    e.preventDefault();
+                    setReviewSubmitting(true);
+                    try {
+                      await productAPI.addReview(id, {
+                        reviewerName: reviewForm.name,
+                        reviewerEmail: reviewForm.email,
+                        rating: reviewForm.rating,
+                        reviewText: reviewForm.review,
+                        reviewDate: new Date().toISOString(),
+                      });
                         setReviewForm({ name: user?.name || '', email: user?.email || '', rating: 0, review: '' });
-                        const updated = await productAPI.getProductById(id);
-                        setProduct({ ...updated, gallery: product.gallery });
-                      } catch {
-                        // handle error
-                      }
-                      setReviewSubmitting(false);
-                    }}>
-                      <div className="row g-2">
-                        <div className="col-md-4">
-                          <input type="text" className="form-control" placeholder="Your Name*" value={reviewForm.name} onChange={e => setReviewForm(f => ({ ...f, name: e.target.value }))} required />
-                        </div>
-                        <div className="col-md-4">
-                          <input type="email" className="form-control" placeholder="Your Email*" value={reviewForm.email} onChange={e => setReviewForm(f => ({ ...f, email: e.target.value }))} required />
-                        </div>
-                        <div className="col-md-4 d-flex align-items-center">
-                          <span className="me-2">Rating*</span>
-                          {[...Array(5)].map((_, i) => (
-                            <i
-                              key={i}
-                              className={`bi ${i < reviewForm.rating ? 'bi-star-fill' : 'bi-star'}`}
-                              style={{ color: '#ffc107', cursor: 'pointer', fontSize: 22 }}
-                              onClick={() => setReviewForm(f => ({ ...f, rating: i + 1 }))}
-                            ></i>
-                          ))}
-                        </div>
+                      const updated = await productAPI.getProductById(id);
+                      setProduct({ ...updated, gallery: product.gallery });
+                    } catch {
+                      // handle error
+                    }
+                    setReviewSubmitting(false);
+                  }}>
+                    <div className="row g-2">
+                      <div className="col-md-4">
+                        <input type="text" className="form-control" placeholder="Your Name*" value={reviewForm.name} onChange={e => setReviewForm(f => ({ ...f, name: e.target.value }))} required />
                       </div>
-                      <div className="row g-2 mt-2">
-                        <div className="col-12">
-                          <textarea className="form-control" placeholder="Your Review*" rows={3} value={reviewForm.review} onChange={e => setReviewForm(f => ({ ...f, review: e.target.value }))} required></textarea>
-                        </div>
+                      <div className="col-md-4">
+                        <input type="email" className="form-control" placeholder="Your Email*" value={reviewForm.email} onChange={e => setReviewForm(f => ({ ...f, email: e.target.value }))} required />
                       </div>
-                      <div className="mt-2">
-                        <button type="submit" className="btn btn-success" disabled={reviewSubmitting}>Submit Review</button>
+                      <div className="col-md-4 d-flex align-items-center">
+                        <span className="me-2">Rating*</span>
+                        {[...Array(5)].map((_, i) => (
+                          <i
+                            key={i}
+                            className={`bi ${i < reviewForm.rating ? 'bi-star-fill' : 'bi-star'}`}
+                            style={{ color: '#ffc107', cursor: 'pointer', fontSize: 22 }}
+                            onClick={() => setReviewForm(f => ({ ...f, rating: i + 1 }))}
+                          ></i>
+                        ))}
                       </div>
-                    </form>
+                    </div>
+                    <div className="row g-2 mt-2">
+                      <div className="col-12">
+                        <textarea className="form-control" placeholder="Your Review*" rows={3} value={reviewForm.review} onChange={e => setReviewForm(f => ({ ...f, review: e.target.value }))} required></textarea>
+                      </div>
+                    </div>
+                    <div className="mt-2">
+                      <button type="submit" className="btn btn-success" disabled={reviewSubmitting}>Submit Review</button>
+                    </div>
+                  </form>
                   )}
                 </div>
               </div>
@@ -608,9 +608,9 @@ export default function ProductDetailsPage() {
                     const showForm = (!q.answer && (!user || !q.answererEmail || user.email !== q.answererEmail)) || (userIsAnswerer && editingAnswer === qid);
                     return (
                       <div key={qid || idx} className="list-group-item">
-                        <div className="fw-bold">Q: {q.question}</div>
+                      <div className="fw-bold">Q: {q.question}</div>
                         <div className="text-muted small">By {q.customerName || 'Anonymous'}</div>
-                        {q.answer ? (
+                      {q.answer ? (
                           <div className="mt-2">
                             <span className="fw-bold">A:</span> {q.answer} <span className="text-muted small ms-2">By {q.answererName || 'Anonymous'}</span>
                             {userIsAnswerer && (
@@ -640,9 +640,9 @@ export default function ProductDetailsPage() {
                                 <button type="button" className="btn btn-link text-danger ms-2" onClick={() => setEditingAnswer(null)}>Cancel</button>
                               </div>
                             </div>
-                          </form>
-                        )}
-                      </div>
+                        </form>
+                      )}
+                    </div>
                     );
                   })}
                 </div>

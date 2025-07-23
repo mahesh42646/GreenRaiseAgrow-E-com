@@ -77,7 +77,7 @@ export default function Footer() {
           <div className="col-md-2 mb-3">
             <h6 className="fw-bold" style={{ color: '#FFA53B' }}>Customer Service</h6>
             <ul className="list-unstyled">
-              <li onClick={() => handleNavigate('/terms-condition')} className="text-white text-decoration-none" style={{ cursor: 'pointer' }}>Terms & Condition</li>
+              <li onClick={() => handleNavigate('/terms-and-conditions')} className="text-white text-decoration-none" style={{ cursor: 'pointer' }}>Terms & Condition</li>
               <li onClick={() => handleNavigate('/shipping-and-delivery')} className="text-white text-decoration-none" style={{ cursor: 'pointer' }}>Shipping Info</li>
               <li onClick={() => handleNavigate('/cancellation-and-refund')} className="text-white text-decoration-none" style={{ cursor: 'pointer' }}>Refund Policy</li>
               <li onClick={() => handleNavigate('/privacy-policy')} className="text-white text-decoration-none" style={{ cursor: 'pointer' }}>Privacy Policy</li>
