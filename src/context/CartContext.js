@@ -57,12 +57,30 @@ export function CartProvider({ children }) {
 
   // Get cart total
   const getCartTotal = () => {
-    return (cartItems || []).reduce((total, item) => total + (item.price * item.quantity), 0);
+    const items = Array.isArray(cartItems) ? cartItems : [];
+    const validItems = items.filter(item => 
+      item && 
+      typeof item.price === 'number' && 
+      typeof item.quantity === 'number' &&
+      item.price > 0 &&
+      item.quantity > 0
+    );
+    return validItems.reduce((total, item) => {
+      const price = Number(item.price) || 0;
+      const quantity = Number(item.quantity) || 0;
+      return total + (price * quantity);
+    }, 0);
   };
   
   // Get cart count
   const getCartCount = () => {
-    return (cartItems || []).reduce((count, item) => count + item.quantity, 0);
+    const items = Array.isArray(cartItems) ? cartItems : [];
+    const validItems = items.filter(item => 
+      item && 
+      typeof item.quantity === 'number' &&
+      item.quantity > 0
+    );
+    return validItems.reduce((count, item) => count + (Number(item.quantity) || 0), 0);
   };
 
   // Add item to cart
@@ -214,7 +232,24 @@ export function CartProvider({ children }) {
   const getCartTotals = () => {
     // Ensure cartItems is an array before using reduce
     const items = Array.isArray(cartItems) ? cartItems : [];
-    const subtotal = items.reduce((total, item) => total + (item.price * item.quantity), 0);
+    
+    // Filter valid items and ensure proper number conversion
+    const validItems = items.filter(item => 
+      item && 
+      item.productId && 
+      item.name && 
+      typeof item.price === 'number' && 
+      typeof item.quantity === 'number' &&
+      item.price > 0 &&
+      item.quantity > 0
+    );
+    
+    const subtotal = validItems.reduce((total, item) => {
+      const price = Number(item.price) || 0;
+      const quantity = Number(item.quantity) || 0;
+      return total + (price * quantity);
+    }, 0);
+    
     const shippingCost = subtotal > 50 ? 0 : 5.99;
     const total = subtotal + shippingCost;
     
@@ -222,7 +257,7 @@ export function CartProvider({ children }) {
       subtotal,
       shippingCost,
       total,
-      itemCount: items.reduce((count, item) => count + item.quantity, 0)
+      itemCount: validItems.reduce((count, item) => count + (Number(item.quantity) || 0), 0)
     };
   };
 

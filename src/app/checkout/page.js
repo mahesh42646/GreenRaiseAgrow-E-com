@@ -6,11 +6,41 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import Header from '../eng/components/header';
 import Footer from '../eng/components/footer';
+import { useCart } from '../../context/CartContext';
+import RazorpayPayment from '../../components/RazorpayPayment';
+import { useAuth } from '../../context/AuthContext';
+import { profileAPI } from '../../services/api';
 
 export default function CheckoutPage() {
   const router = useRouter();
+  const { cartItems, getCartTotals, loading } = useCart();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [step, setStep] = useState(1); // 1: Shipping, 2: Payment, 3: Review
+  const { user, setUser } = useAuth();
+
+  // Show loading while cart is loading
+  if (loading) {
+    return (
+      <>
+        <Header />
+        <div className="container py-5">
+          <div className="text-center">
+            <div className="spinner-border text-success" role="status">
+              <span className="visually-hidden">Loading...</span>
+            </div>
+            <p className="mt-2">Loading checkout...</p>
+          </div>
+        </div>
+        <Footer />
+      </>
+    );
+  }
+
+  // Redirect to cart if cart is empty
+  if (!cartItems || cartItems.length === 0) {
+    router.push('/cart');
+    return null;
+  }
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -20,47 +50,34 @@ export default function CheckoutPage() {
     city: '',
     state: '',
     zipCode: '',
-    country: 'United States',
+    country: 'India',
     createAccount: false,
     password: '',
     confirmPassword: '',
-    paymentMethod: 'credit',
-    cardName: '',
-    cardNumber: '',
-    expiryDate: '',
-    cvv: '',
     orderNotes: '',
     saveInfo: true
   });
+  
+  const [showPayment, setShowPayment] = useState(false);
+  const [orderId, setOrderId] = useState('');
 
-  // Simulated cart data
-  const cartItems = [
-    {
-      id: 1,
-      name: 'Organic Plant Food',
-      price: 15.99,
-      quantity: 2,
-      image: 'https://via.placeholder.com/80',
-    },
-    {
-      id: 2,
-      name: 'Bamboo Toothbrush Set',
-      price: 12.99,
-      quantity: 1,
-      image: 'https://via.placeholder.com/80',
-    },
-    {
-      id: 3,
-      name: 'Reusable Produce Bags',
-      price: 13.99,
-      quantity: 3,
-      image: 'https://via.placeholder.com/80',
-    }
-  ];
-
-  const subtotal = cartItems.reduce((total, item) => total + (item.price * item.quantity), 0);
-  const shippingCost = subtotal > 50 ? 0 : 5.99;
-  const total = subtotal + shippingCost;
+  // Get cart totals from context
+  const { subtotal, shippingCost, total } = getCartTotals();
+  
+  // Debug: Log cart items to see what's causing NaN
+  console.log('Cart Items:', cartItems);
+  console.log('Cart Totals:', { subtotal, shippingCost, total });
+  
+  // Filter valid cart items
+  const validCartItems = cartItems.filter(item => 
+    item && 
+    item.productId && 
+    item.name && 
+    typeof item.price === 'number' && 
+    typeof item.quantity === 'number' &&
+    item.price > 0 &&
+    item.quantity > 0
+  );
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -73,22 +90,126 @@ export default function CheckoutPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    if (step < 3) {
+    if (step < 2) {
       setStep(step + 1);
       window.scrollTo(0, 0);
       return;
     }
     
-    setIsSubmitting(true);
+    // Generate order ID for Razorpay
+    const newOrderId = 'order_' + Date.now();
+    setOrderId(newOrderId);
+    setShowPayment(true);
+  };
 
-    try {
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      router.push('/checkout/success');
-    } catch (error) {
-      console.error('Error processing checkout:', error);
-      setIsSubmitting(false);
+  const handlePaymentSuccess = async (response) => {
+    setShowPayment(false);
+    let currentUser = user;
+    // Register user if needed
+    if (!user && formData.createAccount && formData.email && formData.password) {
+      try {
+        const registered = await profileAPI.register(
+          `${formData.firstName} ${formData.lastName}`,
+          formData.email,
+          formData.password,
+          formData.phone
+        );
+        setUser(registered);
+        currentUser = registered;
+      } catch (err) {
+        // Optionally show error
+      }
     }
+    const orderData = {
+      userId: currentUser?.userId,
+      customerName: `${formData.firstName} ${formData.lastName}`,
+      customerEmail: formData.email,
+      customerPhone: formData.phone,
+      shippingAddress: formData.address,
+      city: formData.city,
+      state: formData.state,
+      zipCode: formData.zipCode,
+      country: formData.country,
+      orderNotes: formData.orderNotes,
+      items: validCartItems,
+      subtotal,
+      shippingCost,
+      total,
+      paymentStatus: response?.test ? 'paid' : 'paid',
+      paymentDetails: response
+    };
+    try {
+      await profileAPI.placeOrder(orderData);
+      if (currentUser?.userId) {
+        await profileAPI.addAddress(currentUser.userId, {
+          street: formData.address,
+          city: formData.city,
+          state: formData.state,
+          country: formData.country,
+          zipCode: formData.zipCode,
+          isDefault: true
+        });
+      }
+    } catch (err) {}
+    router.push('/checkout/success');
+  };
+
+  const handlePaymentFailure = (error) => {
+    console.log('Payment failed:', error);
+    setShowPayment(false);
+    alert('Payment failed. Please try again.');
+  };
+
+  const handlePaymentClose = () => {
+    setShowPayment(false);
+  };
+
+  const handleCashOnDelivery = async () => {
+    let currentUser = user;
+    if (!user && formData.createAccount && formData.email && formData.password) {
+      try {
+        const registered = await profileAPI.register(
+          `${formData.firstName} ${formData.lastName}`,
+          formData.email,
+          formData.password,
+          formData.phone
+        );
+        setUser(registered);
+        currentUser = registered;
+      } catch (err) {}
+    }
+    const orderData = {
+      userId: currentUser?.userId,
+      customerName: `${formData.firstName} ${formData.lastName}`,
+      customerEmail: formData.email,
+      customerPhone: formData.phone,
+      shippingAddress: formData.address,
+      city: formData.city,
+      state: formData.state,
+      zipCode: formData.zipCode,
+      country: formData.country,
+      orderNotes: formData.orderNotes,
+      items: validCartItems,
+      subtotal,
+      shippingCost,
+      total,
+      paymentStatus: 'cod',
+      paymentDetails: { method: 'Cash on Delivery' }
+    };
+    try {
+      await profileAPI.placeOrder(orderData);
+      if (currentUser?.userId) {
+        await profileAPI.addAddress(currentUser.userId, {
+          street: formData.address,
+          city: formData.city,
+          state: formData.state,
+          country: formData.country,
+          zipCode: formData.zipCode,
+          isDefault: true
+        });
+      }
+    } catch (err) {}
+    router.push('/checkout/success');
   };
 
   const goBack = () => {
@@ -108,22 +229,22 @@ export default function CheckoutPage() {
           <div className="col-12">
             <h1 className="mb-3">Checkout</h1>
             <div className="d-flex align-items-center">
-              <div className="progress flex-grow-1" style={{ height: '4px' }}>
-                <div 
-                  className="progress-bar" 
-                  role="progressbar" 
-                  style={{ 
-                    width: `${(step / 3) * 100}%`, 
-                    backgroundColor: '#08A486' 
-                  }} 
-                  aria-valuenow={(step / 3) * 100} 
-                  aria-valuemin="0" 
-                  aria-valuemax="100"
-                ></div>
-              </div>
-              <div className="ms-3 text-muted small">
-                Step {step} of 3
-              </div>
+                          <div className="progress flex-grow-1" style={{ height: '4px' }}>
+              <div 
+                className="progress-bar" 
+                role="progressbar" 
+                style={{ 
+                  width: `${(step / 2) * 100}%`, 
+                  backgroundColor: '#08A486' 
+                }} 
+                aria-valuenow={(step / 2) * 100} 
+                aria-valuemin="0" 
+                aria-valuemax="100"
+              ></div>
+            </div>
+            <div className="ms-3 text-muted small">
+              Step {step} of 2
+            </div>
             </div>
           </div>
         </div>
@@ -254,6 +375,7 @@ export default function CheckoutPage() {
                           onChange={handleChange}
                           required
                         >
+                          <option value="India">India</option>
                           <option value="United States">United States</option>
                           <option value="Canada">Canada</option>
                           <option value="United Kingdom">United Kingdom</option>
@@ -262,22 +384,36 @@ export default function CheckoutPage() {
                       </div>
 
                       <div className="mb-3">
-                        <div className="form-check">
-                          <input
-                            className="form-check-input"
-                            type="checkbox"
-                            id="createAccount"
-                            name="createAccount"
-                            checked={formData.createAccount}
-                            onChange={handleChange}
-                          />
-                          <label className="form-check-label" htmlFor="createAccount">
-                            Create an account for faster checkout next time
-                          </label>
-                        </div>
+                        <label htmlFor="orderNotes" className="form-label">Order Notes (optional)</label>
+                        <textarea
+                          className="form-control"
+                          id="orderNotes"
+                          name="orderNotes"
+                          rows="3"
+                          placeholder="Special instructions for delivery or any other notes"
+                          value={formData.orderNotes}
+                          onChange={handleChange}
+                        ></textarea>
                       </div>
 
-                      {formData.createAccount && (
+                      {!user && (
+                        <div className="mb-3">
+                          <div className="form-check">
+                            <input
+                              className="form-check-input"
+                              type="checkbox"
+                              id="createAccount"
+                              name="createAccount"
+                              checked={formData.createAccount}
+                              onChange={handleChange}
+                            />
+                            <label className="form-check-label" htmlFor="createAccount">
+                              Create an account for faster checkout next time
+                            </label>
+                          </div>
+                        </div>
+                      )}
+                      {formData.createAccount && !user && (
                         <div className="row mb-3">
                           <div className="col-md-6 mb-3">
                             <label htmlFor="password" className="form-label">Password*</label>
@@ -308,141 +444,8 @@ export default function CheckoutPage() {
                     </>
                   )}
 
-                  {/* Step 2: Payment Information */}
+                  {/* Step 2: Review Order */}
                   {step === 2 && (
-                    <>
-                      <h4 className="mb-4">Payment Information</h4>
-                      <div className="mb-4">
-                        <div className="d-flex flex-wrap gap-3">
-                          <div className="form-check">
-                            <input
-                              className="form-check-input"
-                              type="radio"
-                              name="paymentMethod"
-                              id="creditCard"
-                              value="credit"
-                              checked={formData.paymentMethod === 'credit'}
-                              onChange={handleChange}
-                            />
-                            <label className="form-check-label" htmlFor="creditCard">
-                              <i className="bi bi-credit-card me-2"></i>
-                              Credit Card
-                            </label>
-                          </div>
-                          <div className="form-check">
-                            <input
-                              className="form-check-input"
-                              type="radio"
-                              name="paymentMethod"
-                              id="paypal"
-                              value="paypal"
-                              checked={formData.paymentMethod === 'paypal'}
-                              onChange={handleChange}
-                            />
-                            <label className="form-check-label" htmlFor="paypal">
-                              <i className="bi bi-paypal me-2"></i>
-                              PayPal
-                            </label>
-                          </div>
-                        </div>
-                      </div>
-
-                      {formData.paymentMethod === 'credit' && (
-                        <>
-                          <div className="mb-3">
-                            <label htmlFor="cardName" className="form-label">Name on Card*</label>
-                            <input
-                              type="text"
-                              className="form-control"
-                              id="cardName"
-                              name="cardName"
-                              value={formData.cardName}
-                              onChange={handleChange}
-                              required={formData.paymentMethod === 'credit'}
-                            />
-                          </div>
-                          <div className="mb-3">
-                            <label htmlFor="cardNumber" className="form-label">Card Number*</label>
-                            <input
-                              type="text"
-                              className="form-control"
-                              id="cardNumber"
-                              name="cardNumber"
-                              placeholder="XXXX XXXX XXXX XXXX"
-                              value={formData.cardNumber}
-                              onChange={handleChange}
-                              required={formData.paymentMethod === 'credit'}
-                            />
-                          </div>
-                          <div className="row">
-                            <div className="col-md-6 mb-3">
-                              <label htmlFor="expiryDate" className="form-label">Expiry Date*</label>
-                              <input
-                                type="text"
-                                className="form-control"
-                                id="expiryDate"
-                                name="expiryDate"
-                                placeholder="MM/YY"
-                                value={formData.expiryDate}
-                                onChange={handleChange}
-                                required={formData.paymentMethod === 'credit'}
-                              />
-                            </div>
-                            <div className="col-md-6 mb-3">
-                              <label htmlFor="cvv" className="form-label">CVV*</label>
-                              <input
-                                type="text"
-                                className="form-control"
-                                id="cvv"
-                                name="cvv"
-                                placeholder="123"
-                                value={formData.cvv}
-                                onChange={handleChange}
-                                required={formData.paymentMethod === 'credit'}
-                              />
-                            </div>
-                          </div>
-                        </>
-                      )}
-
-                      {formData.paymentMethod === 'paypal' && (
-                        <div className="alert alert-info">
-                          <i className="bi bi-info-circle me-2"></i>
-                          You will be redirected to PayPal to complete your payment after reviewing your order.
-                        </div>
-                      )}
-
-                      <div className="mb-3">
-                        <label htmlFor="orderNotes" className="form-label">Order Notes (optional)</label>
-                        <textarea
-                          className="form-control"
-                          id="orderNotes"
-                          name="orderNotes"
-                          rows="3"
-                          placeholder="Special instructions for delivery or any other notes"
-                          value={formData.orderNotes}
-                          onChange={handleChange}
-                        ></textarea>
-                      </div>
-
-                      <div className="form-check mb-3">
-                        <input
-                          className="form-check-input"
-                          type="checkbox"
-                          id="saveInfo"
-                          name="saveInfo"
-                          checked={formData.saveInfo}
-                          onChange={handleChange}
-                        />
-                        <label className="form-check-label" htmlFor="saveInfo">
-                          Save this information for next time
-                        </label>
-                      </div>
-                    </>
-                  )}
-
-                  {/* Step 3: Review Order */}
-                  {step === 3 && (
                     <>
                       <h4 className="mb-4">Review Your Order</h4>
                       
@@ -470,17 +473,11 @@ export default function CheckoutPage() {
                         <h6 className="mb-3">Payment Method</h6>
                         <div className="card bg-light">
                           <div className="card-body">
-                            {formData.paymentMethod === 'credit' ? (
-                              <p className="mb-0">
-                                <i className="bi bi-credit-card me-2"></i>
-                                Credit Card ending in {formData.cardNumber.slice(-4)}
-                              </p>
-                            ) : (
-                              <p className="mb-0">
-                                <i className="bi bi-paypal me-2"></i>
-                                PayPal
-                              </p>
-                            )}
+                            <p className="mb-0">
+                              <i className="bi bi-credit-card me-2"></i>
+                              Razorpay Payment Gateway
+                            </p>
+                            <small className="text-muted">Secure payment processing by Razorpay</small>
                           </div>
                         </div>
                       </div>
@@ -499,11 +496,11 @@ export default function CheckoutPage() {
                                   </tr>
                                 </thead>
                                 <tbody>
-                                  {cartItems.map(item => (
-                                    <tr key={item.id}>
+                                  {validCartItems.map(item => (
+                                    <tr key={item.productId}>
                                       <td>{item.name}</td>
                                       <td>{item.quantity}</td>
-                                      <td className="text-end">${(item.price * item.quantity).toFixed(2)}</td>
+                                      <td className="text-end">₹{((Number(item.price) || 0) * (Number(item.quantity) || 0)).toFixed(2)}</td>
                                     </tr>
                                   ))}
                                 </tbody>
@@ -523,6 +520,11 @@ export default function CheckoutPage() {
                       <div className="alert alert-warning">
                         <i className="bi bi-exclamation-triangle me-2"></i>
                         By clicking &quot;Place Order&quot;, you agree to our terms and conditions and privacy policy.
+                      </div>
+                      <div className="text-center mt-3">
+                        <button className="btn btn-warning" onClick={handleCashOnDelivery}>
+                          Cash on Delivery
+                        </button>
                       </div>
                     </>
                   )}
@@ -546,7 +548,7 @@ export default function CheckoutPage() {
                           <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
                           Processing...
                         </>
-                      ) : step < 3 ? 'Continue' : 'Place Order'}
+                      ) : step < 2 ? 'Continue' : 'Proceed to Payment'}
                     </button>
                   </div>
                 </form>
@@ -561,11 +563,11 @@ export default function CheckoutPage() {
                 <h5 className="card-title mb-4">Order Summary</h5>
                 
                 <div className="mb-3">
-                  {cartItems.map(item => (
-                    <div key={item.id} className="d-flex align-items-center mb-2">
+                  {validCartItems.map(item => (
+                    <div key={item.productId} className="d-flex align-items-center mb-2">
                       <div className="flex-shrink-0" style={{ width: '50px', height: '50px' }}>
                         <Image 
-                          src={item.image} 
+                          src={item.image || 'https://via.placeholder.com/50'} 
                           alt={item.name} 
                           className="rounded" 
                           width={50}
@@ -579,7 +581,7 @@ export default function CheckoutPage() {
                         <p className="mb-0 text-muted small">Qty: {item.quantity}</p>
                       </div>
                       <div className="ms-auto">
-                        <p className="mb-0 fw-bold">${(item.price * item.quantity).toFixed(2)}</p>
+                        <p className="mb-0 fw-bold">₹{((Number(item.price) || 0) * (Number(item.quantity) || 0)).toFixed(2)}</p>
                       </div>
                     </div>
                   ))}
@@ -589,7 +591,7 @@ export default function CheckoutPage() {
                 
                 <div className="d-flex justify-content-between mb-2">
                   <span>Subtotal</span>
-                  <span className="fw-bold">${subtotal.toFixed(2)}</span>
+                  <span className="fw-bold">₹{subtotal.toFixed(2)}</span>
                 </div>
                 
                 <div className="d-flex justify-content-between mb-2">
@@ -598,7 +600,7 @@ export default function CheckoutPage() {
                     {shippingCost === 0 ? (
                       <span className="text-success">Free</span>
                     ) : (
-                      `$${shippingCost.toFixed(2)}`
+                      `₹${shippingCost.toFixed(2)}`
                     )}
                   </span>
                 </div>
@@ -607,7 +609,7 @@ export default function CheckoutPage() {
                 
                 <div className="d-flex justify-content-between mb-4">
                   <span className="fw-bold">Total</span>
-                  <span className="fw-bold fs-5">${total.toFixed(2)}</span>
+                  <span className="fw-bold fs-5">₹{total.toFixed(2)}</span>
                 </div>
                 
                 <div className="d-grid">
@@ -621,6 +623,29 @@ export default function CheckoutPage() {
           </div>
         </div>
       </div>
+      
+      {/* Razorpay Payment Component */}
+      {showPayment && (
+        <>
+          <RazorpayPayment
+            amount={total}
+            currency="INR"
+            orderId={orderId}
+            customerName={`${formData.firstName} ${formData.lastName}`}
+            customerEmail={formData.email}
+            customerPhone={formData.phone}
+            onSuccess={handlePaymentSuccess}
+            onFailure={handlePaymentFailure}
+            onClose={handlePaymentClose}
+          />
+          <div className="text-center mt-3">
+            <button className="btn btn-success" onClick={() => handlePaymentSuccess({ test: true })}>
+              Payment Done (Test)
+            </button>
+          </div>
+        </>
+      )}
+      
       <Footer />
     </>
   );

@@ -217,5 +217,67 @@ module.exports = function(io) {
     }
   });
 
+  // User login
+  router.post('/login', async (req, res) => {
+    try {
+      const { email, password } = req.body;
+      const user = await User.findOne({ email });
+      if (!user || user.password !== password) {
+        return res.status(401).json({ message: 'Invalid email or password' });
+      }
+      // Don't send password
+      const userProfile = {
+        userId: user.userId,
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+        role: user.role,
+        profileImage: user.profileImage,
+        addresses: user.addresses,
+        cartCount: user.cart.length,
+        wishlistCount: user.wishlist.length,
+        orderCount: user.orders.length,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt
+      };
+      res.status(200).json(userProfile);
+    } catch (error) {
+      res.status(500).json({ message: 'Server error', error: error.message });
+    }
+  });
+
+  // User registration
+  router.post('/register', async (req, res) => {
+    try {
+      const { name, email, password, phone } = req.body;
+      if (!name || !email || !password) {
+        return res.status(400).json({ message: 'Name, email, and password are required' });
+      }
+      const existing = await User.findOne({ email });
+      if (existing) {
+        return res.status(409).json({ message: 'Email already registered' });
+      }
+      const user = new User({ name, email, password, phone });
+      await user.save();
+      const userProfile = {
+        userId: user.userId,
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+        role: user.role,
+        profileImage: user.profileImage,
+        addresses: user.addresses,
+        cartCount: user.cart.length,
+        wishlistCount: user.wishlist.length,
+        orderCount: user.orders.length,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt
+      };
+      res.status(201).json(userProfile);
+    } catch (error) {
+      res.status(500).json({ message: 'Server error', error: error.message });
+    }
+  });
+
   return router;
 }; 

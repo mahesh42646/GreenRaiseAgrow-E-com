@@ -7,6 +7,7 @@ import Header from '../eng/components/header';
 import Footer from '../eng/components/footer';
 import { useAuth } from '../../context/AuthContext';
 import { profileAPI } from '../../services/api';
+import { useRef } from 'react';
 
 export default function AccountPage() {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -16,14 +17,10 @@ export default function AccountPage() {
     lastName: '',
     email: '',
     phone: '',
-    address: '',
-    city: '',
-    state: '',
-    zipCode: '',
-    country: ''
   });
   const [orders, setOrders] = useState([]);
   const [wishlist, setWishlist] = useState([]);
+  const [addresses, setAddresses] = useState([]);
   const [loginForm, setLoginForm] = useState({
     email: '',
     password: ''
@@ -36,54 +33,36 @@ export default function AccountPage() {
     confirmPassword: ''
   });
   const [formError, setFormError] = useState('');
+  const [showOrderModal, setShowOrderModal] = useState(false);
+  const [selectedOrder, setSelectedOrder] = useState(null);
 
   // Load user data when authenticated
   useEffect(() => {
     if (user) {
-      // Set user data from auth context
       setUserData({
         firstName: user.name?.split(' ')[0] || '',
         lastName: user.name?.split(' ')[1] || '',
         email: user.email || '',
         phone: user.phone || '',
-        address: user.address || '',
-        city: user.city || '',
-        state: user.state || '',
-        zipCode: user.zipCode || '',
-        country: user.country || 'United States'
       });
-      
-      // Define fetchUserData inside useEffect
       const fetchUserData = async () => {
         try {
           if (!user || !user.userId) {
             console.error('No user ID available');
             return;
           }
-
-          // Fetch user profile data
           const userProfile = await profileAPI.getUserProfile(user.userId);
-          
-          // Fetch cart
-          const cartData = await profileAPI.getCart(user.userId);
-          
-          // Fetch wishlist
+          setAddresses(userProfile.addresses || []);
           const wishlistData = await profileAPI.getWishlist(user.userId);
-          
-          // Set orders from API or use empty array if not available
-          setOrders(userProfile.orders || []);
-          
-          // Set wishlist from API or use empty array if not available
+          const userOrders = await profileAPI.getUserOrders(user.userId);
+          setOrders(userOrders || []);
           setWishlist(wishlistData || []);
         } catch (err) {
-          console.error('Error fetching user data:', err);
-          // Set empty arrays as fallback
           setOrders([]);
           setWishlist([]);
+          setAddresses([]);
         }
       };
-      
-      // Fetch orders and wishlist
       fetchUserData();
     }
   }, [user]);
@@ -178,6 +157,68 @@ export default function AccountPage() {
   const removeFromWishlist = (id) => {
     setWishlist(wishlist.filter(item => item.id !== id));
   };
+
+  const handleViewOrder = (order) => {
+    setSelectedOrder(order);
+    setShowOrderModal(true);
+  };
+  const handleCloseOrderModal = () => {
+    setShowOrderModal(false);
+    setSelectedOrder(null);
+  };
+  const handleCancelOrder = async () => {
+    if (!selectedOrder) return;
+    try {
+      await profileAPI.updateOrderStatus(selectedOrder._id, 'cancelled', user.userId);
+      setOrders(orders.map(o => o._id === selectedOrder._id ? { ...o, status: 'cancelled' } : o));
+      setShowOrderModal(false);
+      setSelectedOrder(null);
+    } catch (err) {
+      alert('Failed to cancel order.');
+    }
+  };
+
+  // Combine addresses from user profile and orders, deduplicate
+  const getAllUniqueAddresses = () => {
+    const addressKey = addr => [
+      addr.street?.trim().toLowerCase() || '',
+      addr.city?.trim().toLowerCase() || '',
+      addr.state?.trim().toLowerCase() || '',
+      addr.zipCode?.trim().toLowerCase() || '',
+      addr.country?.trim().toLowerCase() || ''
+    ].join('|');
+
+    // Addresses from user profile
+    const profileAddresses = addresses || [];
+
+    // Addresses from orders with same email
+    const orderAddresses = (orders || [])
+      .filter(order => order.customerEmail === userData.email)
+      .map(order => ({
+        street: order.shippingAddress,
+        city: order.city,
+        state: order.state,
+        zipCode: order.zipCode,
+        country: order.country,
+        addressType: 'order',
+        isDefault: false
+      }));
+
+    // Combine and deduplicate
+    const all = [...profileAddresses, ...orderAddresses];
+    const seen = new Set();
+    const unique = [];
+    for (const addr of all) {
+      const key = addressKey(addr);
+      if (!seen.has(key) && key.replace(/\|/g, '') !== '') {
+        seen.add(key);
+        unique.push(addr);
+      }
+    }
+    return unique;
+  };
+
+  const uniqueAddresses = getAllUniqueAddresses();
 
   if (loading) {
     return (
@@ -445,8 +486,8 @@ export default function AccountPage() {
                             <div className="mb-3">
                               <i className="bi bi-geo-alt fs-1 text-success"></i>
                             </div>
-                            <h5>1</h5>
-                            <p className="text-muted mb-0">Address</p>
+                            <h5>{uniqueAddresses.length}</h5>
+                            <p className="text-muted mb-0">Address{uniqueAddresses.length !== 1 ? 'es' : ''}</p>
                           </div>
                         </div>
                       </div>
@@ -467,17 +508,23 @@ export default function AccountPage() {
                           </thead>
                           <tbody>
                             {orders.slice(0, 3).map(order => (
-                              <tr key={order.id}>
-                                <td>{order.id}</td>
-                                <td>{order.date}</td>
+                              showOrderModal && selectedOrder && selectedOrder._id === order._id ? null :
+                              <tr key={order._id}>
+                                <td>{order._id}</td>
+                                <td>{new Date(order.createdAt).toLocaleDateString()}</td>
                                 <td>
                                   <span className={`badge ${order.status === 'Delivered' ? 'bg-success' : 'bg-warning'}`}>
-                                    {order.status}
+                                    {order.status || order.paymentStatus || 'Processing'}
                                   </span>
                                 </td>
-                                <td>${order.total.toFixed(2)}</td>
+                                <td>₹{order.total?.toFixed(2)}</td>
                                 <td>
-                                  <button className="btn btn-sm btn-outline-secondary">View</button>
+                                  {order.items && Array.isArray(order.items)
+                                    ? order.items.map(item => `${item.name} (x${item.quantity})`).join(', ')
+                                    : ''}
+                                </td>
+                                <td>
+                                  <button className="btn btn-sm btn-outline-secondary" onClick={() => handleViewOrder(order)}>View</button>
                                 </td>
                               </tr>
                             ))}
@@ -525,18 +572,23 @@ export default function AccountPage() {
                           </thead>
                           <tbody>
                             {orders.map(order => (
-                              <tr key={order.id}>
-                                <td>{order.id}</td>
-                                <td>{order.date}</td>
+                              showOrderModal && selectedOrder && selectedOrder._id === order._id ? null :
+                              <tr key={order._id}>
+                                <td>{order._id}</td>
+                                <td>{new Date(order.createdAt).toLocaleDateString()}</td>
                                 <td>
                                   <span className={`badge ${order.status === 'Delivered' ? 'bg-success' : 'bg-warning'}`}>
-                                    {order.status}
+                                    {order.status || order.paymentStatus || 'Processing'}
                                   </span>
                                 </td>
-                                <td>${order.total.toFixed(2)}</td>
-                                <td>{order.items}</td>
+                                <td>₹{order.total?.toFixed(2)}</td>
                                 <td>
-                                  <button className="btn btn-sm btn-outline-secondary">View</button>
+                                  {order.items && Array.isArray(order.items)
+                                    ? order.items.map(item => `${item.name} (x${item.quantity})`).join(', ')
+                                    : ''}
+                                </td>
+                                <td>
+                                  <button className="btn btn-sm btn-outline-secondary" onClick={() => handleViewOrder(order)}>View</button>
                                 </td>
                               </tr>
                             ))}
@@ -584,7 +636,7 @@ export default function AccountPage() {
                                     <div>{item.name}</div>
                                   </div>
                                 </td>
-                                <td>${item.price.toFixed(2)}</td>
+                                <td>₹{item.price.toFixed(2)}</td>
                                 <td>
                                   <div className="btn-group">
                                     <button className="btn btn-sm" style={{ backgroundColor: '#08A486', color: 'white' }}>
@@ -672,71 +724,22 @@ export default function AccountPage() {
                         </div>
                       </div>
                       
-                      <h5 className="mt-4 mb-3">Address Information</h5>
-                      
-                      <div className="mb-3">
-                        <label htmlFor="profileAddress" className="form-label">Address</label>
-                        <input
-                          type="text"
-                          className="form-control"
-                          id="profileAddress"
-                          name="address"
-                          value={userData.address}
-                          onChange={handleUserDataChange}
-                        />
-                      </div>
-                      
-                      <div className="row">
-                        <div className="col-md-4 mb-3">
-                          <label htmlFor="profileCity" className="form-label">City</label>
-                          <input
-                            type="text"
-                            className="form-control"
-                            id="profileCity"
-                            name="city"
-                            value={userData.city}
-                            onChange={handleUserDataChange}
-                          />
-                        </div>
-                        <div className="col-md-4 mb-3">
-                          <label htmlFor="profileState" className="form-label">State</label>
-                          <input
-                            type="text"
-                            className="form-control"
-                            id="profileState"
-                            name="state"
-                            value={userData.state}
-                            onChange={handleUserDataChange}
-                          />
-                        </div>
-                        <div className="col-md-4 mb-3">
-                          <label htmlFor="profileZipCode" className="form-label">ZIP Code</label>
-                          <input
-                            type="text"
-                            className="form-control"
-                            id="profileZipCode"
-                            name="zipCode"
-                            value={userData.zipCode}
-                            onChange={handleUserDataChange}
-                          />
-                        </div>
-                      </div>
-                      
-                      <div className="mb-4">
-                        <label htmlFor="profileCountry" className="form-label">Country</label>
-                        <select
-                          className="form-select"
-                          id="profileCountry"
-                          name="country"
-                          value={userData.country}
-                          onChange={handleUserDataChange}
-                        >
-                          <option value="United States">United States</option>
-                          <option value="Canada">Canada</option>
-                          <option value="United Kingdom">United Kingdom</option>
-                          <option value="Australia">Australia</option>
-                        </select>
-                      </div>
+                      <h5 className="mt-4 mb-3">Addresses</h5>
+                      {uniqueAddresses.length === 0 ? (
+                        <div className="alert alert-info">No addresses saved.</div>
+                      ) : (
+                        <ul className="list-group mb-4">
+                          {uniqueAddresses.map((addr, idx) => (
+                            <li key={idx} className="list-group-item">
+                              <div><strong>{addr.addressType?.toUpperCase() || 'ADDRESS'}</strong></div>
+                              <div>{addr.street}</div>
+                              <div>{addr.city}, {addr.state} {addr.zipCode}</div>
+                              <div>{addr.country}</div>
+                              {addr.isDefault && <span className="badge bg-success">Default</span>}
+                            </li>
+                          ))}
+                        </ul>
+                      )}
                       
                       <h5 className="mt-4 mb-3">Password</h5>
                       
@@ -785,6 +788,76 @@ export default function AccountPage() {
         )}
       </div>
       <Footer />
+      {showOrderModal && selectedOrder && (
+        <div className="modal show d-block" tabIndex="-1" style={{ background: 'rgba(0,0,0,0.5)' }}>
+          <div className="modal-dialog modal-lg modal-dialog-centered">
+            <div className="modal-content border-0 shadow-lg rounded-4">
+              <div className="card border-0">
+                <div className="card-header bg-white border-0 d-flex justify-content-between align-items-center">
+                  <div>
+                    <h5 className="mb-1">Order <span className="text-muted">#{selectedOrder._id}</span></h5>
+                    <div className="small text-muted">{new Date(selectedOrder.createdAt).toLocaleString()}</div>
+                  </div>
+                  <span className={`badge px-3 py-2 fs-6 ${selectedOrder.status === 'complete' ? 'bg-success' : selectedOrder.status === 'cancelled' ? 'bg-danger' : selectedOrder.status === 'out for delivery' ? 'bg-info text-dark' : 'bg-warning text-dark'}`}>{selectedOrder.status?.toUpperCase() || selectedOrder.paymentStatus?.toUpperCase() || 'PROCESSING'}</span>
+                </div>
+                <div className="card-body">
+                  <div className="row mb-4">
+                    <div className="col-md-6 mb-3 mb-md-0">
+                      <h6 className="fw-bold mb-2">Shipping Address</h6>
+                      <div className="small">
+                        {selectedOrder.shippingAddress},<br />
+                        {selectedOrder.city}, {selectedOrder.state} {selectedOrder.zipCode},<br />
+                        {selectedOrder.country}
+                      </div>
+                    </div>
+                    <div className="col-md-6">
+                      <h6 className="fw-bold mb-2">Payment</h6>
+                      <span className={`badge bg-light text-dark border px-3 py-2 fs-6 me-2`}>{selectedOrder.paymentDetails?.method ? selectedOrder.paymentDetails.method : (selectedOrder.paymentDetails?.upi ? 'UPI' : (selectedOrder.paymentDetails?.card ? 'Card' : 'Online'))}</span>
+                      <div className="small text-muted mt-2">{selectedOrder.customerName || userData.firstName + ' ' + userData.lastName}<br />{selectedOrder.customerEmail}</div>
+                    </div>
+                  </div>
+                  <h6 className="fw-bold mb-3">Products</h6>
+                  <div className="table-responsive mb-4">
+                    <table className="table table-sm align-middle mb-0">
+                      <thead>
+                        <tr>
+                          <th>Product</th>
+                          <th>Qty</th>
+                          <th>Price</th>
+                          <th>Total</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {selectedOrder.items && selectedOrder.items.map((item, idx) => (
+                          <tr key={idx}>
+                            <td>{item.name}</td>
+                            <td>{item.quantity}</td>
+                            <td>₹{item.price?.toFixed(2)}</td>
+                            <td>₹{(item.price * item.quantity).toFixed(2)}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+                <div className="card-footer bg-white border-0 d-flex flex-column flex-md-row justify-content-between align-items-center">
+                  <div className="mb-2 mb-md-0">
+                    <span className="me-3"><strong>Subtotal:</strong> ₹{selectedOrder.subtotal?.toFixed(2)}</span>
+                    <span className="me-3"><strong>Shipping:</strong> ₹{selectedOrder.shippingCost?.toFixed(2)}</span>
+                    <span><strong>Total:</strong> <span className="fs-5">₹{selectedOrder.total?.toFixed(2)}</span></span>
+                  </div>
+                  <div>
+                    {selectedOrder.status === 'placed' && (
+                      <button className="btn btn-danger me-2" onClick={handleCancelOrder}>Cancel Order</button>
+                    )}
+                    <button className="btn btn-outline-secondary" onClick={handleCloseOrderModal}>Close</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }

@@ -41,6 +41,26 @@ a {
   }
 }
 
+.outlined-text {
+  font-family: Oswald, Arial, sans-serif;
+  font-size: clamp(1.0rem, 2.8vw, 7rem);
+  font-weight: 700;
+  color: transparent;
+  -webkit-text-stroke: 1px #000000;
+  text-stroke: 1px #000000;
+  letter-spacing: 0.04em;
+  line-height: 1.5;
+  
+  text-transform: uppercase;
+  /* Responsive for dark mode */
+}
+@media (prefers-color-scheme: dark) {
+  .outlined-text {
+    -webkit-text-stroke: 1px #dbdbdb;
+    text-stroke: 2.5px #000000;
+  }
+}
+
 
 
 

@@ -43,12 +43,18 @@ const productRoutes = require('./routes/productRoutes')(io);
 const blogRoutes = require('./routes/blogRoutes')(io);
 const profileRoutes = require('./routes/profileRoutes')(io);
 const contactRoutes = require('./routes/contactRoutes')(io);
+const orderRoutes = require('./routes/orderRoutes')(io);
+const deliveryPartnerRoutes = require('./routes/deliveryPartnerRoutes');
+const shiprocketRoutes = require('./routes/shiprocketRoutes');
 
 // API Routes
 app.use('/api/ecom/products', productRoutes);
 app.use('/api/ecom/blogs', blogRoutes);
 app.use('/api/ecom/profile', profileRoutes);
 app.use('/api/ecom/contact', contactRoutes);
+app.use('/api/ecom/orders', orderRoutes);
+app.use('/api/ecom/delivery-partners', deliveryPartnerRoutes);
+app.use('/api/ecom/shiprocket', shiprocketRoutes);
 
 // Root route
 app.get('/', (req, res) => {

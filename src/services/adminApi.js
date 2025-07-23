@@ -140,15 +140,7 @@ export const dashboardAPI = {
 // Orders management
 export const adminOrdersAPI = {
   getAllOrders: async () => {
-    try {
-      // In a real app, this would fetch from a dedicated orders endpoint
-      // Since we don't have that yet, we'll simulate with empty data
-      // that would be populated from the API
-      return [];
-    } catch (error) {
-      console.error('Error fetching orders:', error);
-      throw error;
-    }
+    return await fetchAPI('/orders');
   },
   
   getOrderById: async (id) => {
@@ -209,9 +201,10 @@ export const adminOrdersAPI = {
   },
   
   updateOrderStatus: async (id, status) => {
-    // In a real app, this would be an API call
-    // For now, we'll simulate success
-    return { success: true, id, status };
+    return await fetchAPI(`/orders/${id}/status`, {
+      method: 'PATCH',
+      body: JSON.stringify({ status }),
+    });
   },
   
   deleteOrder: async (id) => {

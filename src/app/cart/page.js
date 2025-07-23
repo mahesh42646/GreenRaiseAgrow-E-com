@@ -27,8 +27,16 @@ export default function CartPage() {
     }
   };
 
-  // Ensure cartItems is an array before using map
-  const safeCartItems = Array.isArray(cartItems) ? cartItems : [];
+  // Ensure cartItems is an array and filter valid items
+  const safeCartItems = Array.isArray(cartItems) ? cartItems.filter(item => 
+    item && 
+    item.productId && 
+    item.name && 
+    typeof item.price === 'number' && 
+    typeof item.quantity === 'number' &&
+    item.price > 0 &&
+    item.quantity > 0
+  ) : [];
 
   return (
     <>
@@ -70,7 +78,7 @@ export default function CartPage() {
                         </tr>
                       </thead>
                       <tbody>
-                        {safeCartItems.map(item => (
+                        {safeCartItems.filter(item => item && item.productId && item.name).map(item => (
                           <tr key={item.productId}>
                             <td style={{ width: '80px' }}>
                               <div style={{ position: 'relative', width: '80px', height: '80px' }}>
@@ -91,7 +99,7 @@ export default function CartPage() {
                                 </Link>
                               </h6>
                             </td>
-                            <td>${item.price.toFixed(2)}</td>
+                            <td>₹{(Number(item.price) || 0).toFixed(2)}</td>
                             <td>
                               <div className="input-group input-group-sm" style={{ width: '100px' }}>
                                 <button 
@@ -116,7 +124,7 @@ export default function CartPage() {
                                 </button>
                               </div>
                             </td>
-                            <td className="fw-bold">${(item.price * item.quantity).toFixed(2)}</td>
+                            <td className="fw-bold">₹{((Number(item.price) || 0) * (Number(item.quantity) || 0)).toFixed(2)}</td>
                             <td>
                               <button 
                                 className="btn btn-sm btn-outline-danger"
@@ -153,7 +161,7 @@ export default function CartPage() {
                   
                   <div className="d-flex justify-content-between mb-2">
                     <span>Subtotal</span>
-                    <span className="fw-bold">${subtotal.toFixed(2)}</span>
+                    <span className="fw-bold">₹{subtotal.toFixed(2)}</span>
                   </div>
                   
                   <div className="d-flex justify-content-between mb-2">
@@ -162,7 +170,7 @@ export default function CartPage() {
                       {shippingCost === 0 ? (
                         <span className="text-success">Free</span>
                       ) : (
-                        `$${shippingCost.toFixed(2)}`
+                        `₹${shippingCost.toFixed(2)}`
                       )}
                     </span>
                   </div>
@@ -170,7 +178,7 @@ export default function CartPage() {
                   {discount > 0 && (
                     <div className="d-flex justify-content-between mb-2 text-success">
                       <span>Discount</span>
-                      <span>-${discount.toFixed(2)}</span>
+                      <span>-₹{discount.toFixed(2)}</span>
                     </div>
                   )}
                   
@@ -178,7 +186,7 @@ export default function CartPage() {
                   
                   <div className="d-flex justify-content-between mb-4">
                     <span className="fw-bold">Total</span>
-                    <span className="fw-bold fs-5">${(total - discount).toFixed(2)}</span>
+                    <span className="fw-bold fs-5">₹{(total - discount).toFixed(2)}</span>
                   </div>
                   
                   {!couponApplied && (

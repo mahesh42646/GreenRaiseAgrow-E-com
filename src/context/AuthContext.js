@@ -40,23 +40,13 @@ export function AuthProvider({ children }) {
   // Login function
   const login = async (email, password) => {
     try {
-      // In a real app, this would be an API call to authenticate
-      // For now, we'll simulate it with hardcoded values
-      if (email && password) {
-        const mockUser = {
-          userId: 'user-123',
-          name: 'John Doe',
-          email: email,
-          role: 'user',
-        };
-        
-        localStorage.setItem('user', JSON.stringify(mockUser));
-        setUser(mockUser);
-        return true;
-      }
-      return false;
+      const user = await profileAPI.login(email, password);
+      setUser(user);
+      localStorage.setItem('user', JSON.stringify(user));
+      return true;
     } catch (err) {
-      setError(err.message);
+      setUser(null);
+      localStorage.removeItem('user');
       return false;
     }
   };

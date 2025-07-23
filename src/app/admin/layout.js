@@ -110,6 +110,18 @@ function AdminLayoutContent({ children }) {
               {sidebarOpen && 'Coupan'}
             </Link>
           </li>
+          <li>
+            <Link href="/admin/delivery-partners" className={`nav-link text-white ${pathname.includes('/delivery-partners') ? 'active' : ''}`}>
+              <i className="bi bi-truck me-2"></i>
+              {sidebarOpen && 'Delivery Partners'}
+            </Link>
+          </li>
+          <li>
+            <Link href="/admin/shiprocket" className={`nav-link text-white ${pathname.includes('/shiprocket') ? 'active' : ''}`}>
+              <i className="bi bi-truck me-2"></i>
+              {sidebarOpen && 'Shiprocket'}
+            </Link>
+          </li>
 
         </ul>
         <hr />

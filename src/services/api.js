@@ -140,6 +140,23 @@ export const profileAPI = {
     method: 'POST',
     body: JSON.stringify(wishlistData),
   }),
+  getUserOrders: (userId) => fetchAPI(`/orders/user/${userId}`),
+  placeOrder: (orderData) => fetchAPI('/orders', {
+    method: 'POST',
+    body: JSON.stringify(orderData),
+  }),
+  login: (email, password) => fetchAPI('/profile/login', {
+    method: 'POST',
+    body: JSON.stringify({ email, password }),
+  }),
+  register: (name, email, password, phone) => fetchAPI('/profile/register', {
+    method: 'POST',
+    body: JSON.stringify({ name, email, password, phone }),
+  }),
+  updateOrderStatus: (orderId, status, userId) => fetchAPI(`/orders/${orderId}/status`, {
+    method: 'PATCH',
+    body: JSON.stringify({ status, userId }),
+  }),
 };
 
 // Contact related API calls

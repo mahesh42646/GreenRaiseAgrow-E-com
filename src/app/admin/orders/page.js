@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import adminApi from '../../../services/adminApi';
 
+const STATUS_OPTIONS = ['placed', 'pending', 'out for delivery', 'cancelled', 'complete'];
+
 export default function AdminOrders() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -14,6 +16,8 @@ export default function AdminOrders() {
   const [sortOrder, setSortOrder] = useState('desc');
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
+  const [showOrderModal, setShowOrderModal] = useState(false);
+  const [selectedOrder, setSelectedOrder] = useState(null);
 
   useEffect(() => {
     const fetchOrders = async () => {
@@ -35,13 +39,13 @@ export default function AdminOrders() {
 
   // Handle search and filter
   const filteredOrders = orders.filter((order) => {
-    const matchesSearch = 
-      order.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      order.customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      order.customer.email.toLowerCase().includes(searchTerm.toLowerCase());
-    
+    const matchesSearch =
+      (order._id?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
+      (order.customerName?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
+      (order.customerEmail?.toLowerCase() || '').includes(searchTerm.toLowerCase());
+
     const matchesStatus = statusFilter === 'All' || order.status === statusFilter;
-    
+
     return matchesSearch && matchesStatus;
   });
 
@@ -94,14 +98,25 @@ export default function AdminOrders() {
     }
   };
 
+  const handleViewOrder = (order) => {
+    setSelectedOrder(order);
+    setShowOrderModal(true);
+  };
+  const handleCloseOrderModal = () => {
+    setShowOrderModal(false);
+    setSelectedOrder(null);
+  };
+
   const handleStatusChange = async (orderId, newStatus) => {
     try {
       await adminApi.orders.updateOrderStatus(orderId, newStatus);
       setOrders(orders.map(order => 
-        order.id === orderId ? { ...order, status: newStatus } : order
+        order._id === orderId ? { ...order, status: newStatus } : order
       ));
+      if (selectedOrder && selectedOrder._id === orderId) {
+        setSelectedOrder({ ...selectedOrder, status: newStatus });
+      }
     } catch (err) {
-      console.error('Error updating order status:', err);
       alert('Failed to update order status');
     }
   };
@@ -172,7 +187,7 @@ export default function AdminOrders() {
               }}
               style={{ width: 'auto' }}
             >
-              {statuses.map(status => (
+              {['All', ...STATUS_OPTIONS].map(status => (
                 <option key={status} value={status}>{status}</option>
               ))}
             </select>
@@ -183,99 +198,39 @@ export default function AdminOrders() {
             <table className="table table-striped table-hover">
               <thead>
                 <tr>
-                  <th onClick={() => handleSort('id')} style={{ cursor: 'pointer' }}>
-                    Order ID {sortBy === 'id' && (sortOrder === 'asc' ? '↑' : '↓')}
-                  </th>
-                  <th onClick={() => handleSort('customer')} style={{ cursor: 'pointer' }}>
-                    Customer {sortBy === 'customer' && (sortOrder === 'asc' ? '↑' : '↓')}
-                  </th>
-                  <th onClick={() => handleSort('date')} style={{ cursor: 'pointer' }}>
-                    Date {sortBy === 'date' && (sortOrder === 'asc' ? '↑' : '↓')}
-                  </th>
-                  <th onClick={() => handleSort('total')} style={{ cursor: 'pointer' }}>
-                    Total {sortBy === 'total' && (sortOrder === 'asc' ? '↑' : '↓')}
-                  </th>
-                  <th onClick={() => handleSort('status')} style={{ cursor: 'pointer' }}>
-                    Status {sortBy === 'status' && (sortOrder === 'asc' ? '↑' : '↓')}
-                  </th>
+                  <th>Order ID</th>
+                  <th>User</th>
+                  <th>Email</th>
+                  <th>Date</th>
+                  <th>Total</th>
+                  <th>Status</th>
                   <th>Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {currentItems.length > 0 ? (
                   currentItems.map((order) => (
-                    <tr key={order.id}>
-                      <td>{order.id}</td>
+                    <tr key={order._id}>
+                      <td>{order._id}</td>
+                      <td>{order.customerName || '-'}</td>
+                      <td>{order.customerEmail || '-'}</td>
+                      <td>{new Date(order.createdAt).toLocaleDateString()}</td>
+                      <td>₹{order.total?.toFixed(2)}</td>
                       <td>
-                        <div className="fw-bold">{order.customer.name}</div>
-                        <small className="text-muted">{order.customer.email}</small>
-                      </td>
-                      <td>{new Date(order.date).toLocaleDateString()}</td>
-                      <td>${order.total.toFixed(2)}</td>
-                      <td>
-                        <div className="dropdown">
-                          <button 
-                            className={`btn btn-sm dropdown-toggle ${
-                              order.status === 'Delivered' ? 'btn-success' : 
-                              order.status === 'Processing' ? 'btn-warning' : 
-                              order.status === 'Shipped' ? 'btn-info' : 'btn-secondary'
-                            }`}
-                            type="button" 
-                            data-bs-toggle="dropdown" 
-                            aria-expanded="false"
-                          >
-                            {order.status}
-                          </button>
-                          <ul className="dropdown-menu">
-                            <li>
-                              <button 
-                                className="dropdown-item" 
-                                onClick={() => handleStatusChange(order.id, 'Processing')}
-                                disabled={order.status === 'Processing'}
-                              >
-                                Processing
-                              </button>
-                            </li>
-                            <li>
-                              <button 
-                                className="dropdown-item" 
-                                onClick={() => handleStatusChange(order.id, 'Shipped')}
-                                disabled={order.status === 'Shipped'}
-                              >
-                                Shipped
-                              </button>
-                            </li>
-                            <li>
-                              <button 
-                                className="dropdown-item" 
-                                onClick={() => handleStatusChange(order.id, 'Delivered')}
-                                disabled={order.status === 'Delivered'}
-                              >
-                                Delivered
-                              </button>
-                            </li>
-                            <li>
-                              <button 
-                                className="dropdown-item" 
-                                onClick={() => handleStatusChange(order.id, 'Cancelled')}
-                                disabled={order.status === 'Cancelled'}
-                              >
-                                Cancelled
-                              </button>
-                            </li>
-                          </ul>
-                        </div>
+                        <select
+                          className={`form-select form-select-sm w-auto ${order.status === 'complete' ? 'bg-success text-white' : order.status === 'cancelled' ? 'bg-danger text-white' : order.status === 'out for delivery' ? 'bg-info text-dark' : 'bg-warning text-dark'}`}
+                          value={order.status}
+                          onChange={e => handleStatusChange(order._id, e.target.value)}
+                        >
+                          {STATUS_OPTIONS.map(opt => (
+                            <option key={opt} value={opt}>{opt.charAt(0).toUpperCase() + opt.slice(1)}</option>
+                          ))}
+                        </select>
                       </td>
                       <td>
                         <div className="btn-group">
-                          <Link href={`/admin/orders/${order.id}`} className="btn btn-sm btn-outline-primary">
+                          <button className="btn btn-sm btn-outline-primary" onClick={() => handleViewOrder(order)}>
                             <i className="bi bi-eye"></i>
-                          </Link>
-                          <button 
-                            className="btn btn-sm btn-outline-danger"
-                            onClick={() => handleDelete(order.id)}
-                          >
-                            <i className="bi bi-trash"></i>
                           </button>
                         </div>
                       </td>
@@ -283,7 +238,7 @@ export default function AdminOrders() {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan="6" className="text-center py-4">
+                    <td colSpan="7" className="text-center py-4">
                       No orders found
                     </td>
                   </tr>
@@ -329,6 +284,74 @@ export default function AdminOrders() {
           )}
         </div>
       </div>
+      {/* Order Details Modal */}
+      {showOrderModal && selectedOrder && (
+        <div className="modal show d-block" tabIndex="-1" style={{ background: 'rgba(0,0,0,0.5)' }}>
+          <div className="modal-dialog modal-lg modal-dialog-centered">
+            <div className="modal-content border-0 shadow-lg rounded-4">
+              <div className="card border-0">
+                <div className="card-header bg-white border-0 d-flex justify-content-between align-items-center">
+                  <div>
+                    <h5 className="mb-1">Order <span className="text-muted">#{selectedOrder._id}</span></h5>
+                    <div className="small text-muted">{new Date(selectedOrder.createdAt).toLocaleString()}</div>
+                  </div>
+                  <span className={`badge px-3 py-2 fs-6 ${selectedOrder.status === 'complete' ? 'bg-success' : selectedOrder.status === 'cancelled' ? 'bg-danger' : selectedOrder.status === 'out for delivery' ? 'bg-info text-dark' : 'bg-warning text-dark'}`}>{selectedOrder.status?.toUpperCase() || selectedOrder.paymentStatus?.toUpperCase() || 'PROCESSING'}</span>
+                </div>
+                <div className="card-body">
+                  <div className="row mb-4">
+                    <div className="col-md-6 mb-3 mb-md-0">
+                      <h6 className="fw-bold mb-2">Shipping Address</h6>
+                      <div className="small">
+                        {selectedOrder.shippingAddress},<br />
+                        {selectedOrder.city}, {selectedOrder.state} {selectedOrder.zipCode},<br />
+                        {selectedOrder.country}
+                      </div>
+                    </div>
+                    <div className="col-md-6">
+                      <h6 className="fw-bold mb-2">Payment</h6>
+                      <span className={`badge bg-light text-dark border px-3 py-2 fs-6 me-2`}>{selectedOrder.paymentDetails?.method ? selectedOrder.paymentDetails.method : (selectedOrder.paymentDetails?.upi ? 'UPI' : (selectedOrder.paymentDetails?.card ? 'Card' : 'Online'))}</span>
+                      <div className="small text-muted mt-2">{selectedOrder.customerName}<br />{selectedOrder.customerEmail}</div>
+                    </div>
+                  </div>
+                  <h6 className="fw-bold mb-3">Products</h6>
+                  <div className="table-responsive mb-4">
+                    <table className="table table-sm align-middle mb-0">
+                      <thead>
+                        <tr>
+                          <th>Product</th>
+                          <th>Qty</th>
+                          <th>Price</th>
+                          <th>Total</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {selectedOrder.items && selectedOrder.items.map((item, idx) => (
+                          <tr key={idx}>
+                            <td>{item.name}</td>
+                            <td>{item.quantity}</td>
+                            <td>₹{item.price?.toFixed(2)}</td>
+                            <td>₹{(item.price * item.quantity).toFixed(2)}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+                <div className="card-footer bg-white border-0 d-flex flex-column flex-md-row justify-content-between align-items-center">
+                  <div className="mb-2 mb-md-0">
+                    <span className="me-3"><strong>Subtotal:</strong> ₹{selectedOrder.subtotal?.toFixed(2)}</span>
+                    <span className="me-3"><strong>Shipping:</strong> ₹{selectedOrder.shippingCost?.toFixed(2)}</span>
+                    <span><strong>Total:</strong> <span className="fs-5">₹{selectedOrder.total?.toFixed(2)}</span></span>
+                  </div>
+                  <div>
+                    <button className="btn btn-outline-secondary" onClick={handleCloseOrderModal}>Close</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

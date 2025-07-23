@@ -116,26 +116,31 @@ export default function Home() {
           <div className="row g-0 p-0">
             {/* Main Hero Banner */}
             <div className="w-100 position-relative p-0">
-              <div className="bg-light " style={{ minHeight: "400px" }}>
-                <div className="row">
+              <div className="bg-light " >
+                <div className="row" >
                   <div className="">
-                    <div className="position-relative p-0" style={{
-                      backgroundImage: 'url("/Hero-Bg.jpg")',
+                    <Image src="/canva.jpg" height={500} width={1000} alt="Hero"  className="d-none" style={{
+                      objectFit: 'cover',
+                      width: '100%',
+                      height: '777px',
+                    }} />
+                    <div className="position-relative p-0 d" style={{
+                      backgroundImage: 'url("/Hero-Bg.png")',
                       backgroundSize: 'cover',
-                      backgroundPosition: 'center',
+                      backgroundPosition: 'right center',
                       backgroundRepeat: 'no-repeat',
                       display: 'flex',
                       alignItems: 'center',
+                      minHeight: '500px',
                     }}>
                       <div className="container py-5 " >
-                        <span className="badge rounded-pill text-bg-danger mb-2">Exclusive offer</span>
-                        <span className="badge rounded-pill text-bg-warning ms-2 mb-2">30% Off</span>
-                        <h1 className="display-5 fw-bold text-white mb-3">STAY HOME &<br />DELIVERED YOUR</h1>
-                        <h2 className="display-6 fw-bold text-success mb-4">DAILY NEEDS</h2>
-                        <p className="mb-4 d-lg-block d-none">Vegetables contain many vitamins and minerals that are good for your health.</p>
-                        <p className="mb-4 d-lg-none d-block" style={{ fontSize: '0.7rem' }}>Vegetables contain many vitamins and <br /> minerals that are good for your health.</p>
-                        <Link href="/shop" className="btn btn-danger rounded-pill px-4 py-2">
-                          Shop Now <i className="bi bi-arrow-right ms-2"></i>
+                       
+                        <h1 className=" fw-bold text-white mb-2" style={{fontSize: '3.2rem'}}>100% Organic 
+                      </h1>
+                        <h2 className=" fw-bold" style={{color: '#ffff', fontSize: '3.2rem'}}>     Plant Growth Regulators</h2>
+                        <p className="pt-3 pb-4 text-white" style={{ fontSize: '1.2rem', maxWidth: '600px' }}>Best quality fertilizers for your home gardening, kitchen gardening. <br/> 100% customer satisfaction with thousands of happy customers.</p>
+                        <Link href="/shop" className="btn btn-lg fw-bold rounded-3 px-4 mb-5 py-2" style={{backgroundColor: '#08A485', color: '#fff'}}>
+                          Shop Now <i className="bi bi-arrow-right ms-2 fw-bold"></i>
                         </Link>
                       </div>
                     </div>
