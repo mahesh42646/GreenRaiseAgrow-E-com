@@ -12,11 +12,30 @@ import { useAuth } from '../../context/AuthContext';
 import { profileAPI } from '../../services/api';
 
 export default function CheckoutPage() {
+  // All hooks at the top
   const router = useRouter();
   const { cartItems, getCartTotals, loading } = useCart();
+  const { user, setUser } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [step, setStep] = useState(1); // 1: Shipping, 2: Payment, 3: Review
-  const { user, setUser } = useAuth();
+  const [formData, setFormData] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    phone: '',
+    address: '',
+    city: '',
+    state: '',
+    zipCode: '',
+    country: 'India',
+    createAccount: false,
+    password: '',
+    confirmPassword: '',
+    orderNotes: '',
+    saveInfo: true
+  });
+  const [showPayment, setShowPayment] = useState(false);
+  const [orderId, setOrderId] = useState('');
 
   // Show loading while cart is loading
   if (loading) {
@@ -41,26 +60,7 @@ export default function CheckoutPage() {
     router.push('/cart');
     return null;
   }
-  const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
-    email: '',
-    phone: '',
-    address: '',
-    city: '',
-    state: '',
-    zipCode: '',
-    country: 'India',
-    createAccount: false,
-    password: '',
-    confirmPassword: '',
-    orderNotes: '',
-    saveInfo: true
-  });
   
-  const [showPayment, setShowPayment] = useState(false);
-  const [orderId, setOrderId] = useState('');
-
   // Get cart totals from context
   const { subtotal, shippingCost, total } = getCartTotals();
   
