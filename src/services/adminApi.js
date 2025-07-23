@@ -2,7 +2,7 @@
 
 import { productAPI, blogAPI, contactAPI } from './api';
 
-const API_URL = 'http://localhost:2999/api/ecom';
+const API_URL = 'https://greenraiseagro.in/api/ecom';
 
 // Generic fetch function with error handling
 async function fetchAPI(endpoint, options = {}) {
