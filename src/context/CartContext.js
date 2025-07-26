@@ -14,7 +14,7 @@ export function CartProvider({ children }) {
   const prevUserId = useRef(null);
   const [merging, setMerging] = useState(false);
 
-  // Load cart on mount and on logout
+  // Load cart on mount and when user changes
   useEffect(() => {
     const loadCart = async () => {
       if (merging) return; // Block loading while merging
@@ -23,21 +23,26 @@ export function CartProvider({ children }) {
         if (user && user.userId) {
           // Logged in: load from backend
           const userCart = await profileAPI.getCart(user.userId);
-          setCartItems(userCart);
+          setCartItems(userCart || []);
         } else {
           // Guest: load from localStorage
           const storedCart = localStorage.getItem('cart');
           setCartItems(storedCart ? JSON.parse(storedCart) : []);
         }
       } catch (err) {
+        console.error('Error loading cart:', err);
         setError('Failed to load cart');
+        // Fallback to localStorage for guests
+        if (!user || !user.userId) {
+          const storedCart = localStorage.getItem('cart');
+          setCartItems(storedCart ? JSON.parse(storedCart) : []);
+        }
       } finally {
         setLoading(false);
       }
     };
-    if (!user || !user.userId || !merging) {
-      loadCart();
-    }
+    
+    loadCart();
   }, [user, merging]);
 
   // Merge cart on login
@@ -46,41 +51,64 @@ export function CartProvider({ children }) {
       if (user && user.userId && !prevUserId.current) {
         setMerging(true);
         setLoading(true);
-        // Get local cart
-        const localCart = JSON.parse(localStorage.getItem('cart') || '[]');
-        // Get backend cart
-        let backendCart = [];
+        
         try {
-          backendCart = await profileAPI.getCart(user.userId);
-        } catch (err) {
-          backendCart = [];
-        }
-        // Merge logic: combine quantities for same productId
-        const merged = [...backendCart];
-        localCart.forEach(localItem => {
-          const idx = merged.findIndex(item => item.productId === localItem.productId);
-          if (idx >= 0) {
-            merged[idx].quantity += Number(localItem.quantity) || 1;
-          } else {
-            merged.push({ ...localItem });
+          // Get local cart
+          const localCart = JSON.parse(localStorage.getItem('cart') || '[]');
+          
+          // Get backend cart
+          let backendCart = [];
+          try {
+            backendCart = await profileAPI.getCart(user.userId);
+          } catch (err) {
+            console.error('Error fetching backend cart:', err);
+            backendCart = [];
           }
-        });
-        // Save merged cart to backend
-        for (const item of merged) {
-          await profileAPI.addToCart(user.userId, {
-            productId: item.productId,
-            quantity: item.quantity
+          
+          // Merge logic: combine quantities for same productId
+          const merged = [...backendCart];
+          localCart.forEach(localItem => {
+            const idx = merged.findIndex(item => item.productId === localItem.productId);
+            if (idx >= 0) {
+              merged[idx].quantity += Number(localItem.quantity) || 1;
+            } else {
+              merged.push({ ...localItem });
+            }
           });
+          
+          // Save merged cart to backend
+          for (const item of merged) {
+            try {
+              await profileAPI.addToCart(user.userId, {
+                productId: item.productId,
+                quantity: item.quantity
+              });
+            } catch (err) {
+              console.error('Error syncing cart item:', err);
+            }
+          }
+          
+          setCartItems(merged);
+          localStorage.removeItem('cart');
+        } catch (err) {
+          console.error('Error merging cart:', err);
+          // Fallback to backend cart only
+          try {
+            const backendCart = await profileAPI.getCart(user.userId);
+            setCartItems(backendCart || []);
+          } catch (backendErr) {
+            console.error('Error loading backend cart:', backendErr);
+            setCartItems([]);
+          }
+        } finally {
+          setMerging(false);
+          setLoading(false);
         }
-        setCartItems(merged);
-        localStorage.removeItem('cart');
-        setMerging(false);
-        setLoading(false);
       }
       prevUserId.current = user ? user.userId : null;
     };
+    
     mergeAndSyncCart();
-    // eslint-disable-next-line
   }, [user && user.userId]);
 
   // Save cart to localStorage whenever it changes (for guests only)
@@ -159,11 +187,13 @@ export function CartProvider({ children }) {
             quantity: addQty
           });
         } catch (err) {
+          console.error('Error syncing cart with backend:', err);
           setError('Failed to sync cart with backend');
         }
       }
       return true;
     } catch (err) {
+      console.error('Error adding item to cart:', err);
       setError('Failed to add item to cart');
       return false;
     }
@@ -186,8 +216,13 @@ export function CartProvider({ children }) {
       
       setCartItems(updatedCart);
       
+      // Save to localStorage for guests
+      if (!user || !user.userId) {
+        localStorage.setItem('cart', JSON.stringify(updatedCart));
+      }
+      
       // If user is logged in, sync with backend
-      if (user) {
+      if (user && user.userId) {
         try {
           await profileAPI.updateCartItemQuantity(user.userId, {
             productId: productId,
@@ -216,8 +251,13 @@ export function CartProvider({ children }) {
       const updatedCart = currentCart.filter(item => item.productId !== productId);
       setCartItems(updatedCart);
       
+      // Save to localStorage for guests
+      if (!user || !user.userId) {
+        localStorage.setItem('cart', JSON.stringify(updatedCart));
+      }
+      
       // If user is logged in, sync with backend
-      if (user) {
+      if (user && user.userId) {
         try {
           await profileAPI.removeFromCart(user.userId, {
             productId: productId
@@ -241,8 +281,13 @@ export function CartProvider({ children }) {
     try {
       setCartItems([]);
       
+      // Clear localStorage for guests
+      if (!user || !user.userId) {
+        localStorage.removeItem('cart');
+      }
+      
       // If user is logged in, sync with backend
-      if (user) {
+      if (user && user.userId) {
         try {
           await profileAPI.clearCart(user.userId);
         } catch (err) {

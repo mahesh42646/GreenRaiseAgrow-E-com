@@ -170,6 +170,99 @@ module.exports = function(io) {
     }
   });
 
+  // Update cart item quantity
+  router.put('/:userId/cart', async (req, res) => {
+    try {
+      const user = await User.findOne({ userId: req.params.userId });
+      
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+      
+      const { productId, quantity } = req.body;
+      
+      if (quantity <= 0) {
+        // Remove item if quantity is 0 or less
+        user.cart = user.cart.filter(item => item.productId !== productId);
+      } else {
+        // Update quantity
+        const cartItem = user.cart.find(item => item.productId === productId);
+        if (cartItem) {
+          cartItem.quantity = quantity;
+        }
+      }
+      
+      await user.save();
+      
+      res.status(200).json(user.cart);
+      
+      // Emit event for cart update
+      io.emit('profile:cart:updated', { 
+        userId: user.userId,
+        cartCount: user.cart.length
+      });
+    } catch (error) {
+      console.error('Error updating cart item:', error);
+      res.status(500).json({ message: 'Server error', error: error.message });
+    }
+  });
+
+  // Remove item from cart
+  router.delete('/:userId/cart', async (req, res) => {
+    try {
+      const user = await User.findOne({ userId: req.params.userId });
+      
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+      
+      const { productId } = req.body;
+      
+      // Remove item from cart
+      user.cart = user.cart.filter(item => item.productId !== productId);
+      
+      await user.save();
+      
+      res.status(200).json(user.cart);
+      
+      // Emit event for cart update
+      io.emit('profile:cart:updated', { 
+        userId: user.userId,
+        cartCount: user.cart.length
+      });
+    } catch (error) {
+      console.error('Error removing from cart:', error);
+      res.status(500).json({ message: 'Server error', error: error.message });
+    }
+  });
+
+  // Clear cart
+  router.delete('/:userId/cart/clear', async (req, res) => {
+    try {
+      const user = await User.findOne({ userId: req.params.userId });
+      
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+      
+      // Clear all items from cart
+      user.cart = [];
+      
+      await user.save();
+      
+      res.status(200).json({ message: 'Cart cleared successfully', cart: [] });
+      
+      // Emit event for cart update
+      io.emit('profile:cart:updated', { 
+        userId: user.userId,
+        cartCount: 0
+      });
+    } catch (error) {
+      console.error('Error clearing cart:', error);
+      res.status(500).json({ message: 'Server error', error: error.message });
+    }
+  });
+
   // Get user wishlist
   router.get('/:userId/wishlist', async (req, res) => {
     try {

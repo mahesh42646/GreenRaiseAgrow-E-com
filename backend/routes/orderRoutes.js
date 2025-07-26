@@ -9,14 +9,18 @@ module.exports = function(io) {
     try {
       const order = new Order(req.body);
       await order.save();
+      
       // Link order to user if userId is present
       if (req.body.userId) {
         const user = await User.findOne({ userId: req.body.userId });
         if (user) {
           user.orders.push(order._id);
+          // Clear the user's cart after successful order placement
+          user.cart = [];
           await user.save();
         }
       }
+      
       res.status(201).json({ message: 'Order placed successfully', order });
       io.emit('order:created', { orderId: order._id });
     } catch (error) {

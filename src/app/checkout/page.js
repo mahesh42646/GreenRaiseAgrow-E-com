@@ -14,7 +14,7 @@ import { profileAPI, razorpayAPI } from '../../services/api';
 export default function CheckoutPage() {
   // All hooks at the top
   const router = useRouter();
-  const { cartItems, getCartTotals, loading } = useCart();
+  const { cartItems, getCartTotals, loading, clearCart } = useCart();
   const { user, setUser } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [step, setStep] = useState(1); // 1: Shipping, 2: Payment, 3: Review
@@ -170,6 +170,7 @@ export default function CheckoutPage() {
           isDefault: true
         });
       }
+      clearCart(); // Clear cart after successful payment
     } catch (err) {}
     router.push('/checkout/success');
   };
@@ -228,6 +229,7 @@ export default function CheckoutPage() {
           isDefault: true
         });
       }
+      clearCart(); // Clear cart after successful COD
     } catch (err) {}
     router.push('/checkout/success');
   };

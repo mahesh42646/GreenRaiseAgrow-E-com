@@ -171,6 +171,20 @@ export const profileAPI = {
     body: JSON.stringify(cartData),
   }),
   
+  updateCartItemQuantity: (userId, cartData) => fetchAPI(`/profile/${userId}/cart`, {
+    method: 'PUT',
+    body: JSON.stringify(cartData),
+  }),
+  
+  removeFromCart: (userId, cartData) => fetchAPI(`/profile/${userId}/cart`, {
+    method: 'DELETE',
+    body: JSON.stringify(cartData),
+  }),
+  
+  clearCart: (userId) => fetchAPI(`/profile/${userId}/cart/clear`, {
+    method: 'DELETE',
+  }),
+  
   getWishlist: (userId) => fetchAPI(`/profile/${userId}/wishlist`),
   
   addToWishlist: (userId, wishlistData) => fetchAPI(`/profile/${userId}/wishlist`, {
