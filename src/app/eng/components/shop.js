@@ -117,10 +117,10 @@ export default function Shop() {
     });
     
     addToCart({
-      id: product.productId,
-      name: product.productName,
-      price: product.discountedPrice || product.actualPrice,
-      image: product.productImage || "https://via.placeholder.com/150"
+      productId: product.productId,
+      productName: product.productName,
+      actualPrice: product.discountedPrice || product.actualPrice,
+      productImage: product.productImage || "https://via.placeholder.com/150"
     });
     
     // Hide animation after completion

@@ -138,12 +138,12 @@ export default function ProductDetailsPage() {
         setCartAnimation({ show: true, x: startX, y: startY, endX, endY });
         setTimeout(() => setCartAnimation({ show: false, x: 0, y: 0, endX: 0, endY: 0 }), 1000);
       }
+
       addToCart({
-        id: product.productId,
-        name: product.productName,
-        price: product.discountedPrice || product.actualPrice,
-        image: product.productImage || (Array.isArray(product.gallery) && product.gallery[0]) || 'https://via.placeholder.com/150',
-        quantity,
+        productId: product.productId,
+        productName: product.productName,
+        actualPrice: product.discountedPrice || product.actualPrice,
+        productImage: product.productImage || (Array.isArray(product.gallery) && product.gallery[0]) || 'https://via.placeholder.com/150'
       });
     }
   };
