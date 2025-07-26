@@ -87,13 +87,16 @@ export function CartProvider({ children }) {
           localCart.forEach(localItem => {
             const existingItem = merged.find(item => item.productId === localItem.productId);
             if (!existingItem) {
-              // Only add if item doesn't exist in backend
-              merged.push(localItem);
+              // Only add if item doesn't exist in backend - send only basic cart data
+              merged.push({
+                productId: localItem.productId,
+                quantity: localItem.quantity
+              });
             }
             // Don't add quantities - keep backend quantities as they are
           });
           
-          // Sync merged cart to backend
+          // Sync merged cart to backend (only basic cart data)
           if (merged.length > 0) {
             await profileAPI.syncCart(user.userId, merged);
           }
@@ -240,8 +243,11 @@ export function CartProvider({ children }) {
       };
 
       if (user && user.userId) {
-        // Logged in: add to backend
-        await profileAPI.addToCart(user.userId, newItem);
+        // Logged in: add to backend (only basic cart data)
+        await profileAPI.addToCart(user.userId, {
+          productId: product.productId,
+          quantity: 1
+        });
         
         // Update local state
         setCartItems(prev => {
@@ -286,8 +292,11 @@ export function CartProvider({ children }) {
 
     try {
       if (user && user.userId) {
-        // Logged in: update backend
-        await profileAPI.updateCartItemQuantity(user.userId, { productId, quantity: newQuantity });
+        // Logged in: update backend (only basic cart data)
+        await profileAPI.updateCartItemQuantity(user.userId, { 
+          productId, 
+          quantity: newQuantity 
+        });
       }
       
       // Update local state
@@ -308,7 +317,7 @@ export function CartProvider({ children }) {
   const removeFromCart = async (productId) => {
     try {
       if (user && user.userId) {
-        // Logged in: remove from backend
+        // Logged in: remove from backend (only basic cart data)
         await profileAPI.removeFromCart(user.userId, { productId });
       }
       
