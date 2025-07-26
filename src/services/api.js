@@ -208,6 +208,10 @@ export const profileAPI = {
     method: 'PATCH',
     body: JSON.stringify({ status, userId }),
   }),
+  syncCart: (userId, cartData) => fetchAPI(`/profile/${userId}/cart/sync`, {
+    method: 'POST',
+    body: JSON.stringify(cartData),
+  }),
 };
 
 // Contact related API calls

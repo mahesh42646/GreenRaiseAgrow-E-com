@@ -27,8 +27,8 @@ export default function CartPage() {
     }
   };
 
-  // Ensure cartItems is an array and filter valid items
-  const safeCartItems = Array.isArray(cartItems) ? cartItems.filter(item => 
+  // Normalize cart items for display
+  const normalizedCartItems = Array.isArray(cartItems) ? cartItems.filter(item => 
     item && 
     item.productId && 
     item.name && 
@@ -51,7 +51,7 @@ export default function CartPage() {
             </div>
             <p className="mt-2">Loading your cart...</p>
           </div>
-        ) : safeCartItems.length === 0 ? (
+        ) : normalizedCartItems.length === 0 ? (
           <div className="text-center py-5">
             <i className="bi bi-cart-x fs-1 text-muted mb-3"></i>
             <h3>Your cart is empty</h3>
@@ -78,7 +78,7 @@ export default function CartPage() {
                         </tr>
                       </thead>
                       <tbody>
-                        {safeCartItems.filter(item => item && item.productId && item.name).map(item => (
+                        {normalizedCartItems.filter(item => item && item.productId && item.name).map(item => (
                           <tr key={item.productId}>
                             <td style={{ width: '80px' }}>
                               <div style={{ position: 'relative', width: '80px', height: '80px' }}>

@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const User = require('../models/userModel');
+const Product = require('../models/productModel');
 
 // Initialize socket.io for this router
 module.exports = function(io) {
@@ -259,6 +260,29 @@ module.exports = function(io) {
       });
     } catch (error) {
       console.error('Error clearing cart:', error);
+      res.status(500).json({ message: 'Server error', error: error.message });
+    }
+  });
+
+  // Sync cart (for merging local and backend cart)
+  router.post('/:userId/cart/sync', async (req, res) => {
+    try {
+      const user = await User.findOne({ userId: req.params.userId });
+      
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+      
+      // Replace entire cart with synced data
+      user.cart = req.body;
+      await user.save();
+      
+      res.status(200).json(user.cart);
+      
+      // Emit event for cart update
+      io.emit('cart:updated', { userId: req.params.userId, cart: user.cart });
+    } catch (error) {
+      console.error('Error syncing cart:', error);
       res.status(500).json({ message: 'Server error', error: error.message });
     }
   });
