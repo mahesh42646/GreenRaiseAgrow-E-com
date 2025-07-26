@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect, useRef } from 'react';
 import { useAuth } from './AuthContext';
 import { profileAPI } from '../services/api';
 
@@ -11,49 +11,84 @@ export function CartProvider({ children }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const { user } = useAuth();
+  const prevUserId = useRef(null);
+  const [merging, setMerging] = useState(false);
 
-  // Load cart items on mount and when user changes
+  // Load cart on mount and on logout
   useEffect(() => {
     const loadCart = async () => {
+      if (merging) return; // Block loading while merging
+      setLoading(true);
       try {
-        setLoading(true);
-        
-        if (user) {
-          // If user is logged in, get cart from API
-          try {
-            const userCart = await profileAPI.getCart(user.userId);
-            setCartItems(userCart);
-          } catch (err) {
-            console.error('Error loading cart from API:', err);
-            // If API fails, try to get from localStorage
-            const storedCart = localStorage.getItem('cart');
-            if (storedCart) {
-              setCartItems(JSON.parse(storedCart));
-            }
-          }
+        if (user && user.userId) {
+          // Logged in: load from backend
+          const userCart = await profileAPI.getCart(user.userId);
+          setCartItems(userCart);
         } else {
-          // If no user, get cart from localStorage
+          // Guest: load from localStorage
           const storedCart = localStorage.getItem('cart');
-          if (storedCart) {
-            setCartItems(JSON.parse(storedCart));
-          }
+          setCartItems(storedCart ? JSON.parse(storedCart) : []);
         }
       } catch (err) {
-        console.error('Error loading cart:', err);
+        setError('Failed to load cart');
       } finally {
         setLoading(false);
       }
     };
+    if (!user || !user.userId || !merging) {
+      loadCart();
+    }
+  }, [user, merging]);
 
-    loadCart();
-  }, [user]);
-
-  // Save cart to localStorage whenever it changes
+  // Merge cart on login
   useEffect(() => {
-    if (!loading) {
+    const mergeAndSyncCart = async () => {
+      if (user && user.userId && !prevUserId.current) {
+        setMerging(true);
+        setLoading(true);
+        // Get local cart
+        const localCart = JSON.parse(localStorage.getItem('cart') || '[]');
+        // Get backend cart
+        let backendCart = [];
+        try {
+          backendCart = await profileAPI.getCart(user.userId);
+        } catch (err) {
+          backendCart = [];
+        }
+        // Merge logic: combine quantities for same productId
+        const merged = [...backendCart];
+        localCart.forEach(localItem => {
+          const idx = merged.findIndex(item => item.productId === localItem.productId);
+          if (idx >= 0) {
+            merged[idx].quantity += Number(localItem.quantity) || 1;
+          } else {
+            merged.push({ ...localItem });
+          }
+        });
+        // Save merged cart to backend
+        for (const item of merged) {
+          await profileAPI.addToCart(user.userId, {
+            productId: item.productId,
+            quantity: item.quantity
+          });
+        }
+        setCartItems(merged);
+        localStorage.removeItem('cart');
+        setMerging(false);
+        setLoading(false);
+      }
+      prevUserId.current = user ? user.userId : null;
+    };
+    mergeAndSyncCart();
+    // eslint-disable-next-line
+  }, [user && user.userId]);
+
+  // Save cart to localStorage whenever it changes (for guests only)
+  useEffect(() => {
+    if (!loading && (!user || !user.userId)) {
       localStorage.setItem('cart', JSON.stringify(cartItems || []));
     }
-  }, [cartItems, loading]);
+  }, [cartItems, loading, user]);
 
   // Get cart total
   const getCartTotal = () => {
@@ -86,18 +121,12 @@ export function CartProvider({ children }) {
   // Add item to cart
   const addToCart = async (product) => {
     try {
-      console.log('Adding to cart:', product);
-      console.log('Current cart items:', cartItems);
-      
       // Ensure cartItems is an array
       const currentCart = Array.isArray(cartItems) ? cartItems : [];
-      
       // Check if product already exists in cart
       const existingItemIndex = currentCart.findIndex(item => item.productId === product.id);
-      
       let newCartItems;
       const addQty = Number(product.quantity) > 0 ? Number(product.quantity) : 1;
-      
       if (existingItemIndex >= 0) {
         // Increase quantity if product already in cart
         newCartItems = currentCart.map((item, index) => 
@@ -117,25 +146,24 @@ export function CartProvider({ children }) {
         };
         newCartItems = [...currentCart, newItem];
       }
-      
-      console.log('New cart items:', newCartItems);
       setCartItems(newCartItems);
-      
+      // Save to localStorage for guests
+      if (!user || !user.userId) {
+        localStorage.setItem('cart', JSON.stringify(newCartItems));
+      }
       // If user is logged in, sync with backend
-      if (user) {
+      if (user && user.userId) {
         try {
           await profileAPI.addToCart(user.userId, {
             productId: product.id,
             quantity: addQty
           });
         } catch (err) {
-          console.error('Error syncing cart with backend:', err);
+          setError('Failed to sync cart with backend');
         }
       }
-      
       return true;
     } catch (err) {
-      console.error('Error adding to cart:', err);
       setError('Failed to add item to cart');
       return false;
     }

@@ -9,7 +9,7 @@ import Footer from '../eng/components/footer';
 import { useCart } from '../../context/CartContext';
 import RazorpayPayment from '../../components/RazorpayPayment';
 import { useAuth } from '../../context/AuthContext';
-import { profileAPI } from '../../services/api';
+import { profileAPI, razorpayAPI } from '../../services/api';
 
 export default function CheckoutPage() {
   // All hooks at the top
@@ -36,6 +36,8 @@ export default function CheckoutPage() {
   });
   const [showPayment, setShowPayment] = useState(false);
   const [orderId, setOrderId] = useState('');
+  const [razorpayKey, setRazorpayKey] = useState('');
+  const [paymentLoading, setPaymentLoading] = useState(false);
 
   // Show loading while cart is loading
   if (loading) {
@@ -96,10 +98,28 @@ export default function CheckoutPage() {
       return;
     }
     
-    // Generate order ID for Razorpay
-    const newOrderId = 'order_' + Date.now();
-    setOrderId(newOrderId);
-    setShowPayment(true);
+    // Initialize payment
+    setPaymentLoading(true);
+    try {
+      // Get Razorpay key
+      const keyResponse = await razorpayAPI.getKey();
+      setRazorpayKey(keyResponse.key);
+      
+      // Create Razorpay order
+      const orderResponse = await razorpayAPI.createOrder({
+        amount: total,
+        currency: 'INR',
+        receipt: `order_${Date.now()}`
+      });
+      
+      setOrderId(orderResponse.id);
+      setShowPayment(true);
+    } catch (error) {
+      console.error('Payment initialization failed:', error);
+      alert('Failed to initialize payment. Please try again.');
+    } finally {
+      setPaymentLoading(false);
+    }
   };
 
   const handlePaymentSuccess = async (response) => {
@@ -462,7 +482,7 @@ export default function CheckoutPage() {
                             <p className="mb-1">
                               <strong>Email:</strong> {formData.email}
                             </p>
-                            <p className="mb-0">
+                            <p className="mb-1">
                               <strong>Phone:</strong> {formData.phone}
                             </p>
                           </div>
@@ -541,12 +561,12 @@ export default function CheckoutPage() {
                       type="submit"
                       className="btn"
                       style={{ backgroundColor: '#08A486', color: 'white' }}
-                      disabled={isSubmitting}
+                      disabled={isSubmitting || paymentLoading}
                     >
-                      {isSubmitting ? (
+                      {isSubmitting || paymentLoading ? (
                         <>
                           <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                          Processing...
+                          {paymentLoading ? 'Initializing Payment...' : 'Processing...'}
                         </>
                       ) : step < 2 ? 'Continue' : 'Proceed to Payment'}
                     </button>
@@ -625,7 +645,7 @@ export default function CheckoutPage() {
       </div>
       
       {/* Razorpay Payment Component */}
-      {showPayment && (
+      {showPayment && razorpayKey && (
         <>
           <RazorpayPayment
             amount={total}
@@ -634,6 +654,7 @@ export default function CheckoutPage() {
             customerName={`${formData.firstName} ${formData.lastName}`}
             customerEmail={formData.email}
             customerPhone={formData.phone}
+            razorpayKey={razorpayKey}
             onSuccess={handlePaymentSuccess}
             onFailure={handlePaymentFailure}
             onClose={handlePaymentClose}

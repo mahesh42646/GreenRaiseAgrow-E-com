@@ -46,6 +46,7 @@ const contactRoutes = require('./routes/contactRoutes')(io);
 const orderRoutes = require('./routes/orderRoutes')(io);
 const deliveryPartnerRoutes = require('./routes/deliveryPartnerRoutes');
 const shiprocketRoutes = require('./routes/shiprocketRoutes');
+const razorpayRoutes = require('./routes/razorpayRoutes');
 
 // API Routes
 app.use('/api/ecom/products', productRoutes);
@@ -55,6 +56,7 @@ app.use('/api/ecom/contact', contactRoutes);
 app.use('/api/ecom/orders', orderRoutes);
 app.use('/api/ecom/delivery-partners', deliveryPartnerRoutes);
 app.use('/api/ecom/shiprocket', shiprocketRoutes);
+app.use('/api/razorpay', razorpayRoutes);
 
 // Root route
 app.get('/', (req, res) => {

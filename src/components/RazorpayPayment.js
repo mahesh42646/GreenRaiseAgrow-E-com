@@ -2,8 +2,14 @@
 
 import { useEffect } from 'react';
 
-const RazorpayPayment = ({ amount, currency = 'INR', orderId, customerName, customerEmail, customerPhone, onSuccess, onFailure, onClose }) => {
+const RazorpayPayment = ({ amount, currency = 'INR', orderId, customerName, customerEmail, customerPhone, razorpayKey, onSuccess, onFailure, onClose }) => {
   useEffect(() => {
+    if (!razorpayKey) {
+      console.error('Razorpay key is required');
+      onFailure({ error: 'Razorpay key is missing' });
+      return;
+    }
+
     // Load Razorpay script
     const script = document.createElement('script');
     script.src = 'https://checkout.razorpay.com/v1/checkout.js';
@@ -12,13 +18,12 @@ const RazorpayPayment = ({ amount, currency = 'INR', orderId, customerName, cust
 
     script.onload = () => {
       const options = {
-        key: 'rzp_test_51H5j8j8j8j8j8', // Test key - replace with your actual key
+        key: razorpayKey,
         amount: amount * 100, // Razorpay expects amount in paise
         currency: currency,
         name: 'GreenRaise Agrow',
         description: 'Eco-friendly products purchase',
         handler: function (response) {
-          console.log('Payment successful:', response);
           onSuccess(response);
         },
         prefill: {
@@ -38,15 +43,22 @@ const RazorpayPayment = ({ amount, currency = 'INR', orderId, customerName, cust
           }
         }
       };
+      
       if (orderId) {
         options.order_id = orderId;
       }
+      
       const rzp = new window.Razorpay(options);
       rzp.open();
+      
       rzp.on('payment.failed', function (response) {
-        console.log('Payment failed:', response.error);
         onFailure(response.error);
       });
+    };
+
+    script.onerror = () => {
+      console.error('Failed to load Razorpay script');
+      onFailure({ error: 'Failed to load payment gateway' });
     };
 
     return () => {
@@ -56,7 +68,7 @@ const RazorpayPayment = ({ amount, currency = 'INR', orderId, customerName, cust
         document.body.removeChild(existingScript);
       }
     };
-  }, [amount, currency, orderId, customerName, customerEmail, customerPhone, onSuccess, onFailure, onClose]);
+  }, [amount, currency, orderId, customerName, customerEmail, customerPhone, razorpayKey, onSuccess, onFailure, onClose]);
 
   return null; // This component doesn't render anything visible
 };

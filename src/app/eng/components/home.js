@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { productAPI } from "../../../services/api";
 import Link from "next/link";
 import Image from "next/image";
+import Hero from "../../../components/hero";
 
 export default function Home() {
   // Sample data - in a real app, these would come from an API
@@ -136,7 +137,7 @@ export default function Home() {
         `
       }} />
       {/* Hero Section - Based on the image */}
-      <div className="p-0" >
+      <div className="p-0 d-none"  >
         <div className=" p-0">
           <div className="row g-0 p-0">
             {/* Main Hero Banner */}
@@ -178,10 +179,10 @@ export default function Home() {
           </div>
         </div>
       </div>
-
+      <Hero />
       <div className=" ">
         {/* Categories Section - Based on the image */}
-        <section className="  container py-5">
+        <section className="  container pb-5">
           <h2 className="fw-bold py-2">Categories</h2>
           <div className="row pb-3">
             <div className="col-md-6 col-lg-4 py-lg-0 py-2 ">

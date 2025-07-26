@@ -1,6 +1,7 @@
  // API service for connecting to the backend
 
 const API_URL = 'https://greenraiseagro.in/api/ecom';
+const RAZORPAY_API_URL = 'https://greenraiseagro.in/api';
 
 // Generic fetch function with error handling
 async function fetchAPI(endpoint, options = {}) {
@@ -34,6 +35,42 @@ async function fetchAPI(endpoint, options = {}) {
     return data;
   } catch (error) {
     console.error('API Error:', error);
+    throw error;
+  }
+}
+
+// Razorpay specific fetch function
+async function fetchRazorpayAPI(endpoint, options = {}) {
+  try {
+    console.log(`Razorpay API Request: ${RAZORPAY_API_URL}${endpoint}`, { 
+      method: options.method || 'GET',
+      headers: options.headers
+    });
+    
+    const response = await fetch(`${RAZORPAY_API_URL}${endpoint}`, {
+      ...options,
+      headers: {
+        'Content-Type': 'application/json',
+        ...options.headers,
+      },
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error('Razorpay API Error Response:', {
+        status: response.status,
+        statusText: response.statusText,
+        endpoint: `${RAZORPAY_API_URL}${endpoint}`,
+        errorData
+      });
+      throw new Error(errorData.message || 'Something went wrong');
+    }
+
+    const data = await response.json();
+    console.log(`Razorpay API Response: ${RAZORPAY_API_URL}${endpoint}`, data);
+    return data;
+  } catch (error) {
+    console.error('Razorpay API Error:', error);
     throw error;
   }
 }
@@ -176,11 +213,22 @@ export const contactAPI = {
   }),
 };
 
+// Razorpay related API calls
+export const razorpayAPI = {
+  getKey: () => fetchRazorpayAPI('/razorpay/key'),
+  
+  createOrder: (orderData) => fetchRazorpayAPI('/razorpay/order', {
+    method: 'POST',
+    body: JSON.stringify(orderData),
+  }),
+};
+
 const apiServices = {
   product: productAPI,
   blog: blogAPI,
   profile: profileAPI,
   contact: contactAPI,
+  razorpay: razorpayAPI,
 };
 
 export default apiServices; 
