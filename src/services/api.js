@@ -192,6 +192,11 @@ export const blogAPI = {
 export const profileAPI = {
   getUserProfile: (userId) => fetchAPI(`/profile/${userId}`),
   
+  createFirebaseUser: (firebaseUid, name, email, phone) => fetchAPI('/profile/firebase/create', {
+    method: 'POST',
+    body: JSON.stringify({ firebaseUid, name, email, phone }),
+  }),
+  
   updateUserProfile: (userId, profileData) => fetchAPI(`/profile/${userId}`, {
     method: 'PUT',
     body: JSON.stringify(profileData),

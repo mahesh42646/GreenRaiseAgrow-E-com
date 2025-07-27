@@ -11,7 +11,7 @@ import { useRef } from 'react';
 
 export default function AccountPage() {
   const [activeTab, setActiveTab] = useState('dashboard');
-  const { user, loading, login, register, logout, updateProfile } = useAuth();
+  const { user, loading, login, loginWithGoogle, register, logout, updateProfile, error } = useAuth();
   const [userData, setUserData] = useState({
     firstName: '',
     lastName: '',
@@ -75,11 +75,26 @@ export default function AccountPage() {
       const success = await login(loginForm.email, loginForm.password);
       
       if (!success) {
-        setFormError('Invalid email or password');
+        setFormError(error || 'Invalid email or password');
       }
     } catch (err) {
       setFormError('Login failed. Please try again.');
       console.error('Login error:', err);
+    }
+  };
+
+  const handleGoogleLogin = async () => {
+    setFormError('');
+    
+    try {
+      const success = await loginWithGoogle();
+      
+      if (!success) {
+        setFormError(error || 'Google login failed');
+      }
+    } catch (err) {
+      setFormError('Google login failed. Please try again.');
+      console.error('Google login error:', err);
     }
   };
 
@@ -93,11 +108,17 @@ export default function AccountPage() {
       return;
     }
     
+    // Validate password strength
+    if (registerForm.password.length < 6) {
+      setFormError('Password must be at least 6 characters long');
+      return;
+    }
+    
     try {
       const success = await register(registerForm);
       
       if (!success) {
-        setFormError('Registration failed. Please try again.');
+        setFormError(error || 'Registration failed. Please try again.');
       }
     } catch (err) {
       setFormError('Registration failed. Please try again.');
@@ -288,6 +309,17 @@ export default function AccountPage() {
                         style={{ backgroundColor: '#08A486', color: 'white' }}
                       >
                         Login
+                      </button>
+                    </div>
+                    <div className="mt-3 text-center">
+                      <div className="mb-2">- OR -</div>
+                      <button 
+                        type="button" 
+                        className="btn btn-outline-secondary w-100"
+                        onClick={handleGoogleLogin}
+                      >
+                        <i className="bi bi-google me-2"></i>
+                        Continue with Google
                       </button>
                     </div>
                     <div className="mt-3 text-center">

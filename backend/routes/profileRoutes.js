@@ -5,6 +5,54 @@ const Product = require('../models/productModel');
 
 // Initialize socket.io for this router
 module.exports = function(io) {
+  // Create or get Firebase user profile
+  router.post('/firebase/create', async (req, res) => {
+    try {
+      const { firebaseUid, name, email, phone } = req.body;
+      
+      if (!firebaseUid || !email) {
+        return res.status(400).json({ message: 'Firebase UID and email are required' });
+      }
+      
+      // Check if user already exists
+      let user = await User.findOne({ userId: firebaseUid });
+      
+      if (!user) {
+        // Create new user with Firebase UID as userId
+        user = new User({
+          userId: firebaseUid,
+          name: name || email.split('@')[0],
+          email: email,
+          phone: phone || '',
+          password: 'firebase-auth', // Placeholder since Firebase handles auth
+          role: 'user'
+        });
+        
+        await user.save();
+      }
+      
+      // Return user profile without password
+      const userProfile = {
+        userId: user.userId,
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+        role: user.role,
+        profileImage: user.profileImage,
+        addresses: user.addresses,
+        cartCount: user.cart.length,
+        wishlistCount: user.wishlist.length,
+        orderCount: user.orders.length,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt
+      };
+      
+      res.status(200).json(userProfile);
+    } catch (error) {
+      console.error('Error creating Firebase user profile:', error);
+      res.status(500).json({ message: 'Server error', error: error.message });
+    }
+  });
   // Get user profile
   router.get('/:userId', async (req, res) => {
     try {

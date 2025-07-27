@@ -87,18 +87,36 @@ export default function Header() {
                                         </Link>
                                     </div>
                                 </div>
-                                <button className="btn d-flex align-items-center fw-semibold py-2 me-lg-3" style={{ backgroundColor: '#08A486', color: 'white' }}>
+                                {/* <button className="btn d-flex align-items-center fw-semibold py-2 me-lg-3" style={{ backgroundColor: '#08A486', color: 'white' }}>
                                     <i className="bi bi-list-ul me-2"></i> All Categories
                                 </button>
                                 <button className="btn btn-outline-success border-2 fw-bold d-flex py-2 align-items-center" style={{ borderColor: '#08A486', color: '#08A486', borderWidth: '1px' }}>
                                     <i className="bi bi-lightning-charge-fill me-2"></i> Deal Today
-                                </button>
+                                </button> */}
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
 
+
+            {/* <!--Start of Tawk.to Script--> */}
+            <script
+                dangerouslySetInnerHTML={{
+                    __html: `
+                        var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
+                        (function(){
+                            var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
+                            s1.async=true;
+                            s1.src='https://embed.tawk.to/688644f7776d10192a7a7a63/1j167qqlq';
+                            s1.charset='UTF-8';
+                            s1.setAttribute('crossorigin','*');
+                            s0.parentNode.insertBefore(s1,s0);
+                        })();
+                    `
+                }}
+            />
+            {/* <!--End of Tawk.to Script--> */}
             {/* --- Mobile Header --- */}
             <div className="d-lg-none border-bottom sticky-top bg-white" style={{ zIndex: 1040 }}>
                 <div className="container-fluid px-2 d-flex justify-content-between align-items-center py-2">

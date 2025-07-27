@@ -1,6 +1,7 @@
 'use client';
 
 import { createContext, useContext, useState, useEffect } from 'react';
+import { auth, googleProvider, signInWithPopup, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from '../firebase';
 import { profileAPI } from '../services/api';
 
 const AuthContext = createContext();
@@ -12,41 +13,92 @@ export function AuthProvider({ children }) {
 
   // Check if user is logged in on mount
   useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const storedUser = localStorage.getItem('user');
-        if (storedUser) {
-          const userData = JSON.parse(storedUser);
-          // Verify with backend
-          try {
-            const profile = await profileAPI.getUserProfile(userData.userId);
-            setUser(profile);
-          } catch (err) {
-            // If API call fails, clear localStorage
-            localStorage.removeItem('user');
-            setUser(null);
-          }
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      if (firebaseUser) {
+        try {
+          // Create or get backend user profile
+          const backendUser = await profileAPI.createFirebaseUser(
+            firebaseUser.uid,
+            firebaseUser.displayName || firebaseUser.email?.split('@')[0] || 'User',
+            firebaseUser.email,
+            firebaseUser.phoneNumber || ''
+          );
+          
+          // Convert backend user to our app format
+          const userData = {
+            userId: backendUser.userId,
+            name: backendUser.name,
+            email: backendUser.email,
+            phone: backendUser.phone || '',
+            photoURL: firebaseUser.photoURL,
+            role: backendUser.role,
+            isEmailVerified: firebaseUser.emailVerified,
+          };
+          
+          setUser(userData);
+          
+          // Store user data in localStorage for persistence
+          localStorage.setItem('user', JSON.stringify(userData));
+        } catch (err) {
+          console.error('Error creating backend user profile:', err);
+          // Fallback to Firebase user data if backend fails
+          const userData = {
+            userId: firebaseUser.uid,
+            name: firebaseUser.displayName || firebaseUser.email?.split('@')[0] || 'User',
+            email: firebaseUser.email,
+            phone: firebaseUser.phoneNumber || '',
+            photoURL: firebaseUser.photoURL,
+            role: 'user',
+            isEmailVerified: firebaseUser.emailVerified,
+          };
+          
+          setUser(userData);
+          localStorage.setItem('user', JSON.stringify(userData));
         }
-      } catch (err) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
+      } else {
+        setUser(null);
+        localStorage.removeItem('user');
       }
-    };
+      setLoading(false);
+    });
 
-    checkAuth();
+    return () => unsubscribe();
   }, []);
 
-  // Login function
+  // Login with email and password
   const login = async (email, password) => {
     try {
-      const user = await profileAPI.login(email, password);
-      setUser(user);
-      localStorage.setItem('user', JSON.stringify(user));
+      setError(null);
+      const result = await signInWithEmailAndPassword(auth, email, password);
       return true;
     } catch (err) {
-      setUser(null);
-      localStorage.removeItem('user');
+      setError(err.message);
+      return false;
+    }
+  };
+
+  // Login with Google
+  const loginWithGoogle = async () => {
+    try {
+      setError(null);
+      const result = await signInWithPopup(auth, googleProvider);
+      
+      // Create backend user profile for Google users
+      try {
+        await profileAPI.createFirebaseUser(
+          result.user.uid,
+          result.user.displayName || result.user.email?.split('@')[0] || 'User',
+          result.user.email,
+          result.user.phoneNumber || ''
+        );
+      } catch (backendErr) {
+        console.error('Error creating backend user profile for Google user:', backendErr);
+        // Continue even if backend creation fails
+      }
+      
+      return true;
+    } catch (err) {
+      setError(err.message);
       return false;
     }
   };
@@ -54,21 +106,33 @@ export function AuthProvider({ children }) {
   // Register function
   const register = async (userData) => {
     try {
-      // In a real app, this would be an API call to register
-      // For now, we'll simulate it with hardcoded values
-      if (userData.email && userData.password) {
-        const mockUser = {
-          userId: 'user-' + Math.floor(Math.random() * 1000),
-          name: `${userData.firstName} ${userData.lastName}`,
-          email: userData.email,
-          role: 'user',
-        };
-        
-        localStorage.setItem('user', JSON.stringify(mockUser));
-        setUser(mockUser);
-        return true;
+      setError(null);
+      const result = await createUserWithEmailAndPassword(auth, userData.email, userData.password);
+      
+      // Update display name if provided
+      if (result.user && (userData.firstName || userData.lastName)) {
+        const displayName = `${userData.firstName || ''} ${userData.lastName || ''}`.trim();
+        if (displayName) {
+          await result.user.updateProfile({
+            displayName: displayName
+          });
+        }
       }
-      return false;
+      
+      // Create backend user profile
+      try {
+        await profileAPI.createFirebaseUser(
+          result.user.uid,
+          displayName || userData.email?.split('@')[0] || 'User',
+          userData.email,
+          userData.phone || ''
+        );
+      } catch (backendErr) {
+        console.error('Error creating backend user profile:', backendErr);
+        // Continue even if backend creation fails
+      }
+      
+      return true;
     } catch (err) {
       setError(err.message);
       return false;
@@ -76,23 +140,32 @@ export function AuthProvider({ children }) {
   };
 
   // Logout function
-  const logout = () => {
-    localStorage.removeItem('user');
-    setUser(null);
+  const logout = async () => {
+    try {
+      await signOut(auth);
+      setUser(null);
+      localStorage.removeItem('user');
+    } catch (err) {
+      setError(err.message);
+    }
   };
 
   // Update user profile
   const updateProfile = async (userData) => {
     try {
-      if (!user) return false;
+      if (!user || !auth.currentUser) return false;
       
-      // In a real app, this would be an API call to update profile
-      // const updatedProfile = await profileAPI.updateUserProfile(user.userId, userData);
+      // Update Firebase user profile
+      await auth.currentUser.updateProfile({
+        displayName: userData.name,
+        phoneNumber: userData.phone
+      });
       
-      // For now, we'll simulate it
+      // Update local user state
       const updatedUser = { ...user, ...userData };
-      localStorage.setItem('user', JSON.stringify(updatedUser));
       setUser(updatedUser);
+      localStorage.setItem('user', JSON.stringify(updatedUser));
+      
       return true;
     } catch (err) {
       setError(err.message);
@@ -101,7 +174,16 @@ export function AuthProvider({ children }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, error, login, register, logout, updateProfile }}>
+    <AuthContext.Provider value={{ 
+      user, 
+      loading, 
+      error, 
+      login, 
+      loginWithGoogle,
+      register, 
+      logout, 
+      updateProfile 
+    }}>
       {children}
     </AuthContext.Provider>
   );

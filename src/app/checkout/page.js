@@ -10,12 +10,13 @@ import { useCart } from '../../context/CartContext';
 import RazorpayPayment from '../../components/RazorpayPayment';
 import { useAuth } from '../../context/AuthContext';
 import { profileAPI, razorpayAPI } from '../../services/api';
+import { auth, createUserWithEmailAndPassword } from '../../firebase';
 
 export default function CheckoutPage() {
   // All hooks at the top
   const router = useRouter();
   const { cartItems, getCartTotals, loading, clearCart } = useCart();
-  const { user, setUser } = useAuth();
+  const { user, register, loginWithGoogle } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [step, setStep] = useState(1); // 1: Shipping, 2: Payment, 3: Review
   const [formData, setFormData] = useState({
@@ -92,6 +93,18 @@ export default function CheckoutPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
+    // Validate account creation if needed
+    if (formData.createAccount && !user) {
+      if (formData.password !== formData.confirmPassword) {
+        alert('Passwords do not match');
+        return;
+      }
+      if (formData.password.length < 6) {
+        alert('Password must be at least 6 characters long');
+        return;
+      }
+    }
+    
     if (step < 2) {
       setStep(step + 1);
       window.scrollTo(0, 0);
@@ -128,16 +141,18 @@ export default function CheckoutPage() {
     // Register user if needed
     if (!user && formData.createAccount && formData.email && formData.password) {
       try {
-        const registered = await profileAPI.register(
-          `${formData.firstName} ${formData.lastName}`,
-          formData.email,
-          formData.password,
-          formData.phone
-        );
-        setUser(registered);
-        currentUser = registered;
+        const success = await register({
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          email: formData.email,
+          password: formData.password
+        });
+        if (success) {
+          // User will be automatically set by AuthContext
+          currentUser = auth.currentUser;
+        }
       } catch (err) {
-        // Optionally show error
+        console.error('Registration failed:', err);
       }
     }
     const orderData = {
@@ -189,15 +204,19 @@ export default function CheckoutPage() {
     let currentUser = user;
     if (!user && formData.createAccount && formData.email && formData.password) {
       try {
-        const registered = await profileAPI.register(
-          `${formData.firstName} ${formData.lastName}`,
-          formData.email,
-          formData.password,
-          formData.phone
-        );
-        setUser(registered);
-        currentUser = registered;
-      } catch (err) {}
+        const success = await register({
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          email: formData.email,
+          password: formData.password
+        });
+        if (success) {
+          // User will be automatically set by AuthContext
+          currentUser = auth.currentUser;
+        }
+      } catch (err) {
+        console.error('Registration failed:', err);
+      }
     }
     const orderData = {
       userId: currentUser?.userId,
@@ -420,7 +439,7 @@ export default function CheckoutPage() {
 
                       {!user && (
                         <div className="mb-3">
-                          <div className="form-check">
+                          <div className="form-check mb-2">
                             <input
                               className="form-check-input"
                               type="checkbox"
@@ -432,6 +451,23 @@ export default function CheckoutPage() {
                             <label className="form-check-label" htmlFor="createAccount">
                               Create an account for faster checkout next time
                             </label>
+                          </div>
+                          <div className="text-center">
+                            <div className="mb-2">- OR -</div>
+                            <button 
+                              type="button" 
+                              className="btn btn-outline-secondary w-100"
+                              onClick={async () => {
+                                try {
+                                  await loginWithGoogle();
+                                } catch (err) {
+                                  console.error('Google login failed:', err);
+                                }
+                              }}
+                            >
+                              <i className="bi bi-google me-2"></i>
+                              Continue with Google
+                            </button>
                           </div>
                         </div>
                       )}
@@ -447,7 +483,9 @@ export default function CheckoutPage() {
                               value={formData.password}
                               onChange={handleChange}
                               required={formData.createAccount}
+                              minLength="6"
                             />
+                            <small className="text-muted">Password must be at least 6 characters</small>
                           </div>
                           <div className="col-md-6 mb-3">
                             <label htmlFor="confirmPassword" className="form-label">Confirm Password*</label>
@@ -460,6 +498,9 @@ export default function CheckoutPage() {
                               onChange={handleChange}
                               required={formData.createAccount}
                             />
+                            {formData.password && formData.confirmPassword && formData.password !== formData.confirmPassword && (
+                              <small className="text-danger">Passwords do not match</small>
+                            )}
                           </div>
                         </div>
                       )}
