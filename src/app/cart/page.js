@@ -8,7 +8,7 @@ import Footer from '../eng/components/footer';
 import { useCart } from '../../context/CartContext';
 
 export default function CartPage() {
-  const { cartItems, loading, updateCartItemQuantity, removeFromCart, clearCart, getCartTotals } = useCart();
+  const { cartItems, loading, isInitialized, updateCartItemQuantity, removeFromCart, clearCart, getCartTotals } = useCart();
   const [couponCode, setCouponCode] = useState('');
   const [couponApplied, setCouponApplied] = useState(false);
   const [discount, setDiscount] = useState(0);
@@ -38,13 +38,16 @@ export default function CartPage() {
     item.quantity > 0
   ) : [];
 
+  // Show loading only if not initialized yet
+  const showLoading = loading && !isInitialized;
+
   return (
     <>
       <Header />
       <div className="container py-5">
         <h1 className="mb-4">Your Shopping Cart</h1>
         
-        {loading ? (
+        {showLoading ? (
           <div className="text-center py-5">
             <div className="spinner-border text-success" role="status">
               <span className="visually-hidden">Loading...</span>

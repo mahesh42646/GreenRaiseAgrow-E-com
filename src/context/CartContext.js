@@ -1,10 +1,13 @@
 'use client';
 
-import { createContext, useContext, useState, useEffect, useRef } from 'react';
+import { createContext, useContext, useState, useEffect, useRef, useCallback } from 'react';
 import { useAuth } from './AuthContext';
-import { profileAPI, productAPI } from '../services/api';
+import { profileAPI, productAPI, clearCacheForEndpoint } from '../services/api';
 
 const CartContext = createContext();
+
+// Product cache to avoid repeated API calls
+const productCache = new Map();
 
 export function CartProvider({ children }) {
   const [cartItems, setCartItems] = useState([]);
@@ -13,6 +16,45 @@ export function CartProvider({ children }) {
   const { user } = useAuth();
   const prevUserId = useRef(null);
   const [merging, setMerging] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(false);
+
+  // Cached function to get product details
+  const getProductDetails = useCallback(async (productId) => {
+    if (productCache.has(productId)) {
+      return productCache.get(productId);
+    }
+    
+    try {
+      const product = await productAPI.getProductById(productId);
+      const productData = {
+        name: product.productName,
+        price: product.actualPrice,
+        image: product.productImage
+      };
+      productCache.set(productId, productData);
+      return productData;
+    } catch (err) {
+      console.error(`Error fetching product ${productId}:`, err);
+      return null;
+    }
+  }, []);
+
+  // Batch fetch product details
+  const getProductDetailsBatch = useCallback(async (productIds) => {
+    const uniqueIds = [...new Set(productIds)];
+    const results = await Promise.allSettled(
+      uniqueIds.map(id => getProductDetails(id))
+    );
+    
+    const productMap = new Map();
+    uniqueIds.forEach((id, index) => {
+      if (results[index].status === 'fulfilled' && results[index].value) {
+        productMap.set(id, results[index].value);
+      }
+    });
+    
+    return productMap;
+  }, [getProductDetails]);
 
   // Load cart on mount and when user changes
   useEffect(() => {
@@ -24,25 +66,24 @@ export function CartProvider({ children }) {
           // Logged in: load from backend
           const userCart = await profileAPI.getCart(user.userId);
           
-          // Fetch product details for each cart item
-          const cartWithProducts = await Promise.all(
-            userCart.map(async (item) => {
-              try {
-                const product = await productAPI.getProductById(item.productId);
-                return {
-                  ...item,
-                  name: product.productName,
-                  price: product.actualPrice,
-                  image: product.productImage
-                };
-              } catch (err) {
-                console.error(`Error fetching product ${item.productId}:`, err);
-                return item; // Return item without product details if fetch fails
-              }
-            })
-          );
-          
-          setCartItems(cartWithProducts);
+          if (userCart.length > 0) {
+            // Batch fetch product details
+            const productIds = userCart.map(item => item.productId);
+            const productMap = await getProductDetailsBatch(productIds);
+            
+            // Merge cart items with product details
+            const cartWithProducts = userCart.map(item => {
+              const productDetails = productMap.get(item.productId);
+              return {
+                ...item,
+                ...(productDetails || {})
+              };
+            });
+            
+            setCartItems(cartWithProducts);
+          } else {
+            setCartItems([]);
+          }
         } else {
           // Not logged in: load from localStorage
           const localCart = JSON.parse(localStorage.getItem('cart') || '[]');
@@ -56,11 +97,12 @@ export function CartProvider({ children }) {
         setCartItems(localCart);
       } finally {
         setLoading(false);
+        setIsInitialized(true);
       }
     };
 
     loadCart();
-  }, [user?.userId]);
+  }, [user?.userId, getProductDetailsBatch]);
 
   // Merge cart on login (only once when user first logs in)
   useEffect(() => {
@@ -101,25 +143,24 @@ export function CartProvider({ children }) {
             await profileAPI.syncCart(user.userId, merged);
           }
           
-          // Fetch product details for merged cart
-          const mergedWithProducts = await Promise.all(
-            merged.map(async (item) => {
-              try {
-                const product = await productAPI.getProductById(item.productId);
-                return {
-                  ...item,
-                  name: product.productName,
-                  price: product.actualPrice,
-                  image: product.productImage
-                };
-              } catch (err) {
-                console.error(`Error fetching product ${item.productId}:`, err);
-                return item;
-              }
-            })
-          );
-          
-          setCartItems(mergedWithProducts);
+          if (merged.length > 0) {
+            // Batch fetch product details for merged cart
+            const productIds = merged.map(item => item.productId);
+            const productMap = await getProductDetailsBatch(productIds);
+            
+            // Merge cart items with product details
+            const mergedWithProducts = merged.map(item => {
+              const productDetails = productMap.get(item.productId);
+              return {
+                ...item,
+                ...(productDetails || {})
+              };
+            });
+            
+            setCartItems(mergedWithProducts);
+          } else {
+            setCartItems([]);
+          }
           
           // Clear localStorage after successful merge
           localStorage.removeItem('cart');
@@ -129,23 +170,21 @@ export function CartProvider({ children }) {
           // Fallback: load backend cart without merging
           try {
             const backendCart = await profileAPI.getCart(user.userId);
-            const cartWithProducts = await Promise.all(
-              backendCart.map(async (item) => {
-                try {
-                  const product = await productAPI.getProductById(item.productId);
-                  return {
-                    ...item,
-                    name: product.productName,
-                    price: product.actualPrice,
-                    image: product.productImage
-                  };
-                } catch (err) {
-                  console.error(`Error fetching product ${item.productId}:`, err);
-                  return item;
-                }
-              })
-            );
-            setCartItems(cartWithProducts);
+            if (backendCart.length > 0) {
+              const productIds = backendCart.map(item => item.productId);
+              const productMap = await getProductDetailsBatch(productIds);
+              
+              const cartWithProducts = backendCart.map(item => {
+                const productDetails = productMap.get(item.productId);
+                return {
+                  ...item,
+                  ...(productDetails || {})
+                };
+              });
+              setCartItems(cartWithProducts);
+            } else {
+              setCartItems([]);
+            }
           } catch (err) {
             console.error('Error loading backend cart:', err);
             setCartItems([]);
@@ -165,7 +204,7 @@ export function CartProvider({ children }) {
     };
 
     mergeAndSyncCart();
-  }, [user?.userId]);
+  }, [user?.userId, getProductDetailsBatch]);
 
   // Save to localStorage when user logs out
   useEffect(() => {
@@ -249,6 +288,9 @@ export function CartProvider({ children }) {
           quantity: 1
         });
         
+        // Clear cart cache to ensure fresh data
+        clearCacheForEndpoint(`/profile/${user.userId}/cart`);
+        
         // Update local state
         setCartItems(prev => {
           const existing = prev.find(item => item.productId === product.productId);
@@ -297,6 +339,9 @@ export function CartProvider({ children }) {
           productId, 
           quantity: newQuantity 
         });
+        
+        // Clear cart cache to ensure fresh data
+        clearCacheForEndpoint(`/profile/${user.userId}/cart`);
       }
       
       // Update local state
@@ -319,6 +364,9 @@ export function CartProvider({ children }) {
       if (user && user.userId) {
         // Logged in: remove from backend (only basic cart data)
         await profileAPI.removeFromCart(user.userId, { productId });
+        
+        // Clear cart cache to ensure fresh data
+        clearCacheForEndpoint(`/profile/${user.userId}/cart`);
       }
       
       // Update local state
@@ -335,6 +383,9 @@ export function CartProvider({ children }) {
       if (user && user.userId) {
         // Logged in: clear backend
         await profileAPI.clearCart(user.userId);
+        
+        // Clear cart cache to ensure fresh data
+        clearCacheForEndpoint(`/profile/${user.userId}/cart`);
       }
       
       // Clear local state
@@ -352,6 +403,7 @@ export function CartProvider({ children }) {
     cartItems,
     loading,
     error,
+    isInitialized,
     addToCart,
     updateCartItemQuantity,
     removeFromCart,

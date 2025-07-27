@@ -63,26 +63,34 @@ export default function ProductDetailsPage() {
       try {
         setLoading(true);
         const productData = await productAPI.getProductById(id);
+        
         // Build gallery: productImage as first, then media images/videos
         let gallery = [];
         if (productData.productImage) gallery.push(productData.productImage);
         if (Array.isArray(productData.media)) {
           gallery = gallery.concat(productData.media.filter(m => m.type === 'image').map(m => m.url));
         }
+        
         setProduct({
           ...productData,
           gallery,
         });
         setFaqs(productData.faqs || []);
-        // Fetch questions
-        try {
-          const q = await productAPI.getQuestions(id);
-          setQuestions(q || []);
-        } catch { }
-        // Fetch related products
-        try {
-          const allProducts = await productAPI.getAllProducts();
-          const related = allProducts
+        
+        // Fetch questions and related products in parallel
+        const [questionsData, allProducts] = await Promise.allSettled([
+          productAPI.getQuestions(id),
+          productAPI.getAllProducts()
+        ]);
+        
+        // Set questions if available
+        if (questionsData.status === 'fulfilled') {
+          setQuestions(questionsData.value || []);
+        }
+        
+        // Set related products if available
+        if (allProducts.status === 'fulfilled') {
+          const related = allProducts.value
             .filter(p => p.productId !== id && p.productCategory === productData.productCategory)
             .slice(0, 4)
             .map(p => ({
@@ -93,7 +101,7 @@ export default function ProductDetailsPage() {
               image: p.productImage || (p.media && p.media[0]?.url) || 'https://via.placeholder.com/300x300?text=' + encodeURIComponent(p.productName)
             }));
           setRelatedProducts(related);
-        } catch { }
+        }
       } catch (err) {
         setError('Failed to load product details. Please try again later.');
       } finally {

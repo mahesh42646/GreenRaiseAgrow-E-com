@@ -1,14 +1,20 @@
 'use client';
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { productAPI } from "../../../services/api";
 import { useCart } from "../../../context/CartContext";
 import Link from "next/link";
 import Image from "next/image"; 
 
+// Cache for products data
+const productsCache = {
+  data: null,
+  timestamp: null,
+  CACHE_DURATION: 5 * 60 * 1000 // 5 minutes
+};
+
 export default function Shop() {
   const [products, setProducts] = useState([]);
-  const [filteredProducts, setFilteredProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
@@ -17,28 +23,8 @@ export default function Shop() {
   const [cartAnimation, setCartAnimation] = useState({ show: false, x: 0, y: 0 });
   const { addToCart } = useCart();
 
-  useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        setLoading(true);
-        const data = await productAPI.getAllProducts();
-        const productsArray = Array.isArray(data) ? data : [];
-        setProducts(productsArray);
-        setFilteredProducts(productsArray);
-      } catch (err) {
-        setError("Failed to load products. Please try again later.");
-        setProducts([]);
-        setFilteredProducts([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchProducts();
-  }, []);
-
-  // Filter and sort products
-  useEffect(() => {
+  // Memoized filtered and sorted products
+  const filteredProducts = useMemo(() => {
     let filtered = [...products];
 
     // Search filter
@@ -84,10 +70,45 @@ export default function Shop() {
       }
     });
 
-    setFilteredProducts(filtered);
+    return filtered;
   }, [products, searchTerm, sortBy, priceRange]);
 
-  const handleAddToCart = (product, event) => {
+  // Memoized fetch function
+  const fetchProducts = useCallback(async () => {
+    try {
+      setLoading(true);
+      
+      // Check cache first
+      const now = Date.now();
+      if (productsCache.data && productsCache.timestamp && 
+          (now - productsCache.timestamp) < productsCache.CACHE_DURATION) {
+        setProducts(productsCache.data);
+        setLoading(false);
+        return;
+      }
+
+      const data = await productAPI.getAllProducts();
+      const productsArray = Array.isArray(data) ? data : [];
+      
+      // Update cache
+      productsCache.data = productsArray;
+      productsCache.timestamp = now;
+      
+      setProducts(productsArray);
+    } catch (err) {
+      setError("Failed to load products. Please try again later.");
+      setProducts([]);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchProducts();
+  }, [fetchProducts]);
+
+  // Memoized add to cart handler
+  const handleAddToCart = useCallback((product, event) => {
     // Get the button position for animation
     const button = event.currentTarget;
     const rect = button.getBoundingClientRect();
@@ -103,7 +124,7 @@ export default function Shop() {
       endX = cartRect.left + cartRect.width / 2;
       endY = cartRect.top + cartRect.height / 2;
     } else {
-      // Fallback to top right corner if cart button not found
+      // Fallback position (top-right corner)
       endX = window.innerWidth - 60;
       endY = 80;
     }
@@ -127,7 +148,22 @@ export default function Shop() {
     setTimeout(() => {
       setCartAnimation({ show: false, x: 0, y: 0 });
     }, 1000);
-  };
+  }, [addToCart]);
+
+  // Memoized search handler
+  const handleSearchChange = useCallback((e) => {
+    setSearchTerm(e.target.value);
+  }, []);
+
+  // Memoized sort handler
+  const handleSortChange = useCallback((e) => {
+    setSortBy(e.target.value);
+  }, []);
+
+  // Memoized price range handler
+  const handlePriceRangeChange = useCallback((e) => {
+    setPriceRange(e.target.value);
+  }, []);
 
   if (loading) {
     return (
@@ -239,7 +275,7 @@ export default function Shop() {
                   <select
                     className="form-select border-0 shadow-none bg-light"
                     value={sortBy}
-                    onChange={(e) => setSortBy(e.target.value)}
+                    onChange={handleSortChange}
                     style={{ fontSize: '0.9rem' }}
                   >
                     <option value="name">Sort by Name</option>
@@ -255,7 +291,7 @@ export default function Shop() {
                   <select
                     className="form-select border-0 shadow-none bg-light"
                     value={priceRange}
-                    onChange={(e) => setPriceRange(e.target.value)}
+                    onChange={handlePriceRangeChange}
                     style={{ fontSize: '0.9rem' }}
                   >
                     <option value="all">All Prices</option>
@@ -278,7 +314,7 @@ export default function Shop() {
                       className="form-control border-0 shadow-none bg-light"
                       placeholder="Search products..."
                       value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
+                      onChange={handleSearchChange}
                       style={{ backgroundColor: 'transparent' }}
                     />
                   </div>

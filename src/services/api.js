@@ -3,8 +3,23 @@
 const API_URL = 'https://greenraiseagro.in/api/ecom';
 const RAZORPAY_API_URL = 'https://greenraiseagro.in/api';
 
-// Generic fetch function with error handling
+// Cache for API responses
+const apiCache = new Map();
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+
+// Generic fetch function with error handling and caching
 async function fetchAPI(endpoint, options = {}) {
+  const cacheKey = `${options.method || 'GET'}_${endpoint}_${JSON.stringify(options.body || '')}`;
+  
+  // Check cache for GET requests
+  if (!options.method || options.method === 'GET') {
+    const cached = apiCache.get(cacheKey);
+    if (cached && (Date.now() - cached.timestamp) < CACHE_DURATION) {
+      console.log(`Cache hit: ${API_URL}${endpoint}`);
+      return cached.data;
+    }
+  }
+
   try {
     console.log(`API Request: ${API_URL}${endpoint}`, { 
       method: options.method || 'GET',
@@ -32,12 +47,35 @@ async function fetchAPI(endpoint, options = {}) {
 
     const data = await response.json();
     console.log(`API Response: ${API_URL}${endpoint}`, data);
+    
+    // Cache GET responses
+    if (!options.method || options.method === 'GET') {
+      apiCache.set(cacheKey, {
+        data,
+        timestamp: Date.now()
+      });
+    }
+    
     return data;
   } catch (error) {
     console.error('API Error:', error);
     throw error;
   }
 }
+
+// Clear cache function
+export const clearApiCache = () => {
+  apiCache.clear();
+};
+
+// Clear cache for specific endpoint
+export const clearCacheForEndpoint = (endpoint) => {
+  for (const [key] of apiCache) {
+    if (key.includes(endpoint)) {
+      apiCache.delete(key);
+    }
+  }
+};
 
 // Razorpay specific fetch function
 async function fetchRazorpayAPI(endpoint, options = {}) {
