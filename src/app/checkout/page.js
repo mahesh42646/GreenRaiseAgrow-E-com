@@ -10,7 +10,7 @@ import { useCart } from '../../context/CartContext';
 import RazorpayPayment from '../../components/RazorpayPayment';
 import { useAuth } from '../../context/AuthContext';
 import { profileAPI, razorpayAPI } from '../../services/api';
-import { auth, createUserWithEmailAndPassword } from '../../firebase';
+import { auth, createUserWithEmailAndPassword } from '../../firebase-client';
 
 export default function CheckoutPage() {
   // All hooks at the top

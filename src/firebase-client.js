@@ -13,19 +13,19 @@ const firebaseConfig = {
   measurementId: "G-CMR5FXCRE2"
 };
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
+// Initialize Firebase only on client side
+let app, auth, db, analytics, googleProvider;
 
-// Initialize Analytics only on client side and if supported
-let analytics = null;
 if (typeof window !== 'undefined') {
+  app = initializeApp(firebaseConfig);
+  auth = getAuth(app);
+  db = getFirestore(app);
+  googleProvider = new GoogleAuthProvider();
+  
+  // Initialize Analytics only if supported
   isSupported().then(yes => yes ? getAnalytics(app) : null).then(analyticsInstance => {
     analytics = analyticsInstance;
   });
 }
-
-const auth = getAuth(app);
-const db = getFirestore(app);
-const googleProvider = new GoogleAuthProvider();
 
 export { auth, db, analytics, googleProvider, signInWithPopup, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged }; 

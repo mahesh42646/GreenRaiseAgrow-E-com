@@ -1,7 +1,7 @@
 'use client';
 
 import { createContext, useContext, useState, useEffect } from 'react';
-import { auth, googleProvider, signInWithPopup, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from '../firebase';
+import { auth, googleProvider, signInWithPopup, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from '../firebase-client';
 import { profileAPI } from '../services/api';
 
 const AuthContext = createContext();
@@ -13,6 +13,12 @@ export function AuthProvider({ children }) {
 
   // Check if user is logged in on mount
   useEffect(() => {
+    // Only run on client side and if auth is available
+    if (typeof window === 'undefined' || !auth) {
+      setLoading(false);
+      return;
+    }
+
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
         try {
@@ -69,6 +75,10 @@ export function AuthProvider({ children }) {
   const login = async (email, password) => {
     try {
       setError(null);
+      if (!auth) {
+        setError('Authentication not available');
+        return false;
+      }
       const result = await signInWithEmailAndPassword(auth, email, password);
       return true;
     } catch (err) {
@@ -81,6 +91,10 @@ export function AuthProvider({ children }) {
   const loginWithGoogle = async () => {
     try {
       setError(null);
+      if (!auth || !googleProvider) {
+        setError('Authentication not available');
+        return false;
+      }
       const result = await signInWithPopup(auth, googleProvider);
       
       // Create backend user profile for Google users
@@ -107,6 +121,10 @@ export function AuthProvider({ children }) {
   const register = async (userData) => {
     try {
       setError(null);
+      if (!auth) {
+        setError('Authentication not available');
+        return false;
+      }
       const result = await createUserWithEmailAndPassword(auth, userData.email, userData.password);
       
       // Update display name if provided
@@ -142,6 +160,11 @@ export function AuthProvider({ children }) {
   // Logout function
   const logout = async () => {
     try {
+      if (!auth) {
+        setUser(null);
+        localStorage.removeItem('user');
+        return;
+      }
       await signOut(auth);
       setUser(null);
       localStorage.removeItem('user');
@@ -153,7 +176,7 @@ export function AuthProvider({ children }) {
   // Update user profile
   const updateProfile = async (userData) => {
     try {
-      if (!user || !auth.currentUser) return false;
+      if (!user || !auth || !auth.currentUser) return false;
       
       // Update Firebase user profile
       await auth.currentUser.updateProfile({
