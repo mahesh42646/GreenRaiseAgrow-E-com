@@ -260,6 +260,24 @@ export const profileAPI = {
   }),
 };
 
+// Email verification related API calls
+export const emailVerificationAPI = {
+  sendVerificationEmail: (email, name) => fetchAPI('/email-verification/send-verification', {
+    method: 'POST',
+    body: JSON.stringify({ email, name }),
+  }),
+  
+  verifyOTP: (email, otp) => fetchAPI('/email-verification/verify-otp', {
+    method: 'POST',
+    body: JSON.stringify({ email, otp }),
+  }),
+  
+  resendOTP: (email) => fetchAPI('/email-verification/resend-otp', {
+    method: 'POST',
+    body: JSON.stringify({ email }),
+  }),
+};
+
 // Contact related API calls
 export const contactAPI = {
   submitContactForm: (formData) => fetchAPI('/contact', {

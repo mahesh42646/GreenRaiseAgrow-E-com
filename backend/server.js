@@ -47,6 +47,7 @@ const orderRoutes = require('./routes/orderRoutes')(io);
 const deliveryPartnerRoutes = require('./routes/deliveryPartnerRoutes');
 const shiprocketRoutes = require('./routes/shiprocketRoutes');
 const razorpayRoutes = require('./routes/razorpayRoutes');
+const emailVerificationRoutes = require('./routes/emailVerificationRoutes');
 
 console.log('Routes imported successfully');
 
@@ -59,6 +60,7 @@ app.use('/api/ecom/orders', orderRoutes);
 app.use('/api/ecom/delivery-partners', deliveryPartnerRoutes);
 app.use('/api/ecom/shiprocket', shiprocketRoutes);
 app.use('/api/razorpay', razorpayRoutes);
+app.use('/api/ecom/email-verification', emailVerificationRoutes(io));
 
 console.log('API routes registered successfully');
 
@@ -99,5 +101,6 @@ server.listen(PORT, () => {
   console.log(`- http://localhost:${PORT}/api/ecom/blogs`);
   console.log(`- http://localhost:${PORT}/api/ecom/profile`);
   console.log(`- http://localhost:${PORT}/api/ecom/contact`);
+  console.log(`- http://localhost:${PORT}/api/ecom/email-verification`);
   console.log(`- http://localhost:${PORT}/api/ecom/profile/test (test endpoint)`);
 }); 

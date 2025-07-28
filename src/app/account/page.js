@@ -8,10 +8,21 @@ import Footer from '../eng/components/footer';
 import { useAuth } from '../../context/AuthContext';
 import { profileAPI } from '../../services/api';
 import { useRef } from 'react';
+import EmailVerificationModal from '../../components/EmailVerificationModal';
 
 export default function AccountPage() {
   const [activeTab, setActiveTab] = useState('dashboard');
   const { user, loading, login, loginWithGoogle, register, logout, updateProfile, error } = useAuth();
+    
+  // Handle hash fragments for direct navigation
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const hash = window.location.hash.replace('#', '');
+      if (hash && ['dashboard', 'orders', 'wishlist', 'profile'].includes(hash)) {
+        setActiveTab(hash);
+      }
+    }
+  }, []);
   const [userData, setUserData] = useState({
     firstName: '',
     lastName: '',
@@ -35,6 +46,9 @@ export default function AccountPage() {
   const [formError, setFormError] = useState('');
   const [showOrderModal, setShowOrderModal] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
+  const [showEmailVerification, setShowEmailVerification] = useState(false);
+  const [verificationEmail, setVerificationEmail] = useState('');
+  const [verificationName, setVerificationName] = useState('');
 
   // Load user data when authenticated
   useEffect(() => {
@@ -114,7 +128,15 @@ export default function AccountPage() {
       return;
     }
     
+    // Show email verification modal instead of direct registration
+    setVerificationEmail(registerForm.email);
+    setVerificationName(`${registerForm.firstName} ${registerForm.lastName}`.trim());
+    setShowEmailVerification(true);
+  };
+
+  const handleVerificationSuccess = async () => {
     try {
+      // Now proceed with actual registration
       const success = await register(registerForm);
       
       if (!success) {
@@ -890,6 +912,14 @@ export default function AccountPage() {
           </div>
         </div>
       )}
+      
+      <EmailVerificationModal
+        isOpen={showEmailVerification}
+        onClose={() => setShowEmailVerification(false)}
+        email={verificationEmail}
+        name={verificationName}
+        onVerificationSuccess={handleVerificationSuccess}
+      />
     </>
   );
 }

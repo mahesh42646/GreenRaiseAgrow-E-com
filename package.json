@@ -9,7 +9,8 @@
     "lint": "next lint",
     "server": "node backend/server.js",
     "server:dev": "nodemon backend/server.js",
-    "dev:all": "concurrently \"npm run dev\" \"npm run server:dev\""
+    "dev:all": "concurrently \"npm run dev\" \"npm run server:dev\"",
+    "verify-email": "node backend/verify-email-config.js"
   },
   "dependencies": {
     "bcrypt": "^6.0.0",
@@ -22,6 +23,7 @@
     "firebase": "^10.14.1",
     "mongoose": "^8.0.0",
     "next": "15.3.4",
+    "nodemailer": "^7.0.5",
     "razorpay": "^2.9.6",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
