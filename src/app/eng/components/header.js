@@ -57,7 +57,7 @@ export default function Header() {
     const navLinks = [
         { name: 'Home', href: '/', dropdown: true, icon: 'bi-house-door' },
         { name: 'Shop', href: '/shop', dropdown: true, icon: 'bi-bag' },
-        { name: 'Blog', href: '/blog', dropdown: true, icon: 'bi-journal-text',  },
+        { name: 'Blog', href: '/blog', dropdown: true, icon: 'bi-journal-text', },
         { name: 'Contact', href: '/contact', dropdown: true, icon: 'bi-telephone' },
         { name: 'Cart', href: '/cart', dropdown: true, icon: 'bi-cart3', badge: itemCount > 0 ? itemCount : null },
     ];
@@ -72,9 +72,9 @@ export default function Header() {
                 <div className="py-2">
                     <div className="container">
                         <div className="d-flex align-items-center">
-                        <div className="col-auto">
+                            <div className="col-auto">
                                 <Link href="/" className="navbar-brand fw-bolder fs-3 text-decoration-none">
-                                <Image src="/Logo-h.png" alt="GreenRaise" width={100} height={100} style={{ width: 'auto', height: '64px' }} />
+                                    <Image src="/Logo-h.png" alt="GreenRaise" width={100} height={100} style={{ width: 'auto', height: '64px' }} />
                                 </Link>
                             </div>
 
@@ -101,17 +101,17 @@ export default function Header() {
 
                                 {/* Profile Dropdown */}
                                 <div className="position-relative" ref={profileDropdownRef}>
-                                                            {user ? (
-                            <div className="" ref={mobileProfileDropdownRef}>
-                                            <button 
-                                                className="btn text-dark d-flex align-items-center  rounded-pill p-0" 
+                                    {user ? (
+                                        <div className="" ref={mobileProfileDropdownRef}>
+                                            <button
+                                                className="btn text-dark d-flex align-items-center  rounded-pill p-0"
                                                 style={{ height: '44px', minWidth: '44px' }}
                                                 onClick={handleProfileDropdownToggle}
                                                 type="button"
                                             >
                                                 {user.photoURL ? (
-                                                    <Image 
-                                                        src={user.photoURL} 
+                                                    <Image
+                                                        src={user.photoURL}
                                                         alt={user.name}
                                                         width={44}
                                                         height={44}
@@ -120,7 +120,7 @@ export default function Header() {
                                                     />
                                                 ) : (
                                                     <div className="bg-secondary  d-flex align-items-center justify-content-center"
-                                                     style={{ width: '44px', height: '44px' }}>
+                                                        style={{ width: '44px', height: '44px' }}>
                                                         <i className="bi bi-person text-white"></i>
                                                     </div>
                                                 )}
@@ -129,7 +129,7 @@ export default function Header() {
                                                 </span> */}
                                                 {/* <i className="bi bi-chevron-down ms-1"></i> */}
                                             </button>
-                                            
+
                                             {isProfileDropdownOpen && (
                                                 <div className="dropdown-menu show position-absolute end-0 mt-2 shadow-lg border-0 rounded-3" style={{ minWidth: '200px', zIndex: 1050 }}>
                                                     <div className="px-3 py-2 border-bottom">
@@ -149,8 +149,8 @@ export default function Header() {
                                                         Wishlist
                                                     </Link>
                                                     <div className="dropdown-divider"></div>
-                                                    <button 
-                                                        className="dropdown-item py-2 text-danger" 
+                                                    <button
+                                                        className="dropdown-item py-2 text-danger"
                                                         onClick={handleLogout}
                                                     >
                                                         <i className="bi bi-box-arrow-right me-2"></i>
@@ -201,7 +201,9 @@ export default function Header() {
                 }}
             />
             {/* <!--End of Tawk.to Script--> */}
-            
+
+          
+
             {/* Custom styles for dropdowns */}
             <style jsx>{`
                 .dropdown-menu {
@@ -258,15 +260,15 @@ export default function Header() {
                         </Link>
                         {user ? (
                             <div className="dropdown" ref={mobileProfileDropdownRef}>
-                                <button 
-                                    className="btn text-dark p-0 d-flex align-items-center" 
+                                <button
+                                    className="btn text-dark p-0 d-flex align-items-center"
                                     onClick={handleProfileDropdownToggle}
                                     type="button"
                                     aria-label="Account"
                                 >
                                     {user.photoURL ? (
-                                        <Image 
-                                            src={user.photoURL} 
+                                        <Image
+                                            src={user.photoURL}
                                             alt={user.name}
                                             width={32}
                                             height={32}
@@ -280,7 +282,7 @@ export default function Header() {
                                     )}
                                     <i className="bi bi-chevron-down ms-1"></i>
                                 </button>
-                                
+
                                 {isProfileDropdownOpen && (
                                     <div className="dropdown-menu show position-absolute end-0 mt-2 shadow-lg border-0 rounded-3" style={{ minWidth: '200px', zIndex: 1050 }}>
                                         <div className="px-3 py-2 border-bottom">
@@ -300,8 +302,8 @@ export default function Header() {
                                             Wishlist
                                         </Link>
                                         <div className="dropdown-divider"></div>
-                                        <button 
-                                            className="dropdown-item py-2 text-danger" 
+                                        <button
+                                            className="dropdown-item py-2 text-danger"
                                             onClick={handleLogout}
                                         >
                                             <i className="bi bi-box-arrow-right me-2"></i>
@@ -380,8 +382,8 @@ export default function Header() {
                                     </Link>
                                 </li>
                                 <li className="nav-item mt-3">
-                                    <button 
-                                        className="btn w-100 text-danger" 
+                                    <button
+                                        className="btn w-100 text-danger"
                                         onClick={() => {
                                             handleLogout();
                                             handleOffcanvasToggle();
