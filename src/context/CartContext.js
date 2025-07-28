@@ -110,7 +110,7 @@ export function CartProvider({ children }) {
     };
 
     loadCart();
-  }, [user?.userId, getProductDetailsBatch, merging, user]);
+  }, [user?.userId, getProductDetailsBatch]);
 
   // Merge cart on login (only once when user first logs in)
   useEffect(() => {
@@ -212,7 +212,7 @@ export function CartProvider({ children }) {
     };
 
     mergeAndSyncCart();
-  }, [user?.userId, getProductDetailsBatch, merging, user]);
+  }, [user?.userId, getProductDetailsBatch]);
 
   // Save to localStorage when user logs out
   useEffect(() => {

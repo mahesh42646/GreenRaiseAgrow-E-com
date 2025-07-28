@@ -16,7 +16,7 @@ console.log(`📧 Email User: ${process.env.EMAIL_USER}`);
 // Test email configuration
 const testEmailConfig = async () => {
   try {
-    const transporter = nodemailer.createTransporter({
+    const transporter = nodemailer.createTransport({
       service: 'gmail',
       auth: {
         user: process.env.EMAIL_USER,
