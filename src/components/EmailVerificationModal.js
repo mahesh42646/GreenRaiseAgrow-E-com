@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { emailVerificationAPI } from '../services/api';
 
 export default function EmailVerificationModal({ 
@@ -21,7 +21,7 @@ export default function EmailVerificationModal({
     if (isOpen && email) {
       sendVerificationEmail();
     }
-  }, [isOpen, email]);
+  }, [isOpen, email, sendVerificationEmail]);
 
   useEffect(() => {
     let timer;
@@ -33,7 +33,7 @@ export default function EmailVerificationModal({
     return () => clearTimeout(timer);
   }, [timeLeft, canResend]);
 
-  const sendVerificationEmail = async () => {
+  const sendVerificationEmail = useCallback(async () => {
     try {
       setLoading(true);
       setError('');
@@ -53,7 +53,7 @@ export default function EmailVerificationModal({
     } finally {
       setLoading(false);
     }
-  };
+  }, [email, name]);
 
   const verifyOTP = async () => {
     if (!otp || otp.length !== 6) {
@@ -133,7 +133,7 @@ export default function EmailVerificationModal({
               </div>
               <h6 className="mb-2">Check your email</h6>
               <p className="text-muted mb-0">
-                We've sent a verification code to<br />
+                We&apos;ve sent a verification code to<br />
                 <strong>{email}</strong>
               </p>
             </div>
@@ -204,7 +204,7 @@ export default function EmailVerificationModal({
 
             <div className="text-center mt-3">
               <small className="text-muted">
-                Didn't receive the email? Check your spam folder or try a different email address.
+                Didn&apos;t receive the email? Check your spam folder or try a different email address.
               </small>
             </div>
           </div>
