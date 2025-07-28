@@ -5,30 +5,48 @@ const Product = require('../models/productModel');
 
 // Initialize socket.io for this router
 module.exports = function(io) {
+  // Test route to check if backend is working
+  router.get('/test', (req, res) => {
+    res.status(200).json({ message: 'Profile routes are working' });
+  });
+  
   // Create or get Firebase user profile
   router.post('/firebase/create', async (req, res) => {
     try {
+      console.log('Firebase create request received:', req.body);
       const { firebaseUid, name, email, phone } = req.body;
       
       if (!firebaseUid || !email) {
         return res.status(400).json({ message: 'Firebase UID and email are required' });
       }
       
-      // Check if user already exists
+      // Check if user already exists by Firebase UID
       let user = await User.findOne({ userId: firebaseUid });
       
       if (!user) {
-        // Create new user with Firebase UID as userId
-        user = new User({
-          userId: firebaseUid,
-          name: name || email.split('@')[0],
-          email: email,
-          phone: phone || '',
-          password: 'firebase-auth', // Placeholder since Firebase handles auth
-          role: 'user'
-        });
+        // Check if user exists with same email but different userId
+        const existingUserByEmail = await User.findOne({ email: email });
         
-        await user.save();
+        if (existingUserByEmail) {
+          // Update existing user's userId to Firebase UID
+          existingUserByEmail.userId = firebaseUid;
+          existingUserByEmail.name = name || existingUserByEmail.name;
+          existingUserByEmail.phone = phone || existingUserByEmail.phone;
+          await existingUserByEmail.save();
+          user = existingUserByEmail;
+        } else {
+          // Create new user with Firebase UID as userId
+          user = new User({
+            userId: firebaseUid,
+            name: name || email.split('@')[0],
+            email: email,
+            phone: phone || '',
+            password: 'firebase-auth', // Placeholder since Firebase handles auth
+            role: 'user'
+          });
+          
+          await user.save();
+        }
       }
       
       // Return user profile without password
@@ -50,6 +68,8 @@ module.exports = function(io) {
       res.status(200).json(userProfile);
     } catch (error) {
       console.error('Error creating Firebase user profile:', error);
+      console.error('Request body:', req.body);
+      console.error('Error details:', error.stack);
       res.status(500).json({ message: 'Server error', error: error.message });
     }
   });

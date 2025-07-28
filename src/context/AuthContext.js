@@ -22,6 +22,7 @@ export function AuthProvider({ children }) {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
         try {
+          console.log('Creating backend user profile for Firebase user:', firebaseUser.uid);
           // Create or get backend user profile
           const backendUser = await profileAPI.createFirebaseUser(
             firebaseUser.uid,
@@ -29,6 +30,7 @@ export function AuthProvider({ children }) {
             firebaseUser.email,
             firebaseUser.phoneNumber || ''
           );
+          console.log('Backend user created/retrieved:', backendUser);
           
           // Convert backend user to our app format
           const userData = {

@@ -25,7 +25,10 @@ export function CartProvider({ children }) {
     }
     
     try {
+      console.log(`Fetching product details for ID: ${productId}`);
       const product = await productAPI.getProductById(productId);
+      console.log(`Product data received:`, product);
+      
       const productData = {
         name: product.productName,
         price: product.actualPrice,
@@ -63,13 +66,17 @@ export function CartProvider({ children }) {
       setLoading(true);
       try {
         if (user && user.userId) {
+          console.log('Loading cart for user:', user.userId);
           // Logged in: load from backend
           const userCart = await profileAPI.getCart(user.userId);
+          console.log('Backend cart data:', userCart);
           
           if (userCart.length > 0) {
             // Batch fetch product details
             const productIds = userCart.map(item => item.productId);
+            console.log('Product IDs to fetch:', productIds);
             const productMap = await getProductDetailsBatch(productIds);
+            console.log('Product details map:', productMap);
             
             // Merge cart items with product details
             const cartWithProducts = userCart.map(item => {
@@ -80,6 +87,7 @@ export function CartProvider({ children }) {
               };
             });
             
+            console.log('Final cart with products:', cartWithProducts);
             setCartItems(cartWithProducts);
           } else {
             setCartItems([]);
@@ -273,6 +281,9 @@ export function CartProvider({ children }) {
   // Add to cart
   const addToCart = async (product) => {
     try {
+      console.log('Adding to cart:', product);
+      console.log('Current user:', user);
+      
       const newItem = {
         productId: product.productId,
         quantity: 1,
@@ -282,11 +293,14 @@ export function CartProvider({ children }) {
       };
 
       if (user && user.userId) {
+        console.log('Adding to backend cart for user:', user.userId);
         // Logged in: add to backend (only basic cart data)
         await profileAPI.addToCart(user.userId, {
           productId: product.productId,
           quantity: 1
         });
+        
+        console.log('Successfully added to backend cart');
         
         // Clear cart cache to ensure fresh data
         clearCacheForEndpoint(`/profile/${user.userId}/cart`);
@@ -304,7 +318,31 @@ export function CartProvider({ children }) {
             return [...prev, newItem];
           }
         });
+        
+        // Reload cart from backend to ensure consistency
+        setTimeout(async () => {
+          try {
+            const userCart = await profileAPI.getCart(user.userId);
+            if (userCart.length > 0) {
+              const productIds = userCart.map(item => item.productId);
+              const productMap = await getProductDetailsBatch(productIds);
+              
+              const cartWithProducts = userCart.map(item => {
+                const productDetails = productMap.get(item.productId);
+                return {
+                  ...item,
+                  ...(productDetails || {})
+                };
+              });
+              
+              setCartItems(cartWithProducts);
+            }
+          } catch (err) {
+            console.error('Error reloading cart:', err);
+          }
+        }, 500);
       } else {
+        console.log('Adding to localStorage cart');
         // Not logged in: add to localStorage
         setCartItems(prev => {
           const existing = prev.find(item => item.productId === product.productId);

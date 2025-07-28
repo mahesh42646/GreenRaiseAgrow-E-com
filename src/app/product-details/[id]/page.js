@@ -127,6 +127,8 @@ export default function ProductDetailsPage() {
 
   const handleAddToCart = (event) => {
     if (product) {
+      console.log('Adding product to cart:', product);
+      
       // Animation logic
       const button = event?.currentTarget || addToCartBtnRef.current;
       if (button) {
@@ -147,12 +149,15 @@ export default function ProductDetailsPage() {
         setTimeout(() => setCartAnimation({ show: false, x: 0, y: 0, endX: 0, endY: 0 }), 1000);
       }
 
-      addToCart({
+      const productData = {
         productId: product.productId,
         productName: product.productName,
         actualPrice: product.discountedPrice || product.actualPrice,
         productImage: product.productImage || (Array.isArray(product.gallery) && product.gallery[0]) || 'https://via.placeholder.com/150'
-      });
+      };
+      
+      console.log('Product data being added to cart:', productData);
+      addToCart(productData);
     }
   };
 

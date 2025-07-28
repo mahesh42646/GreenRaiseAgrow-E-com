@@ -48,6 +48,8 @@ const deliveryPartnerRoutes = require('./routes/deliveryPartnerRoutes');
 const shiprocketRoutes = require('./routes/shiprocketRoutes');
 const razorpayRoutes = require('./routes/razorpayRoutes');
 
+console.log('Routes imported successfully');
+
 // API Routes
 app.use('/api/ecom/products', productRoutes);
 app.use('/api/ecom/blogs', blogRoutes);
@@ -58,6 +60,8 @@ app.use('/api/ecom/delivery-partners', deliveryPartnerRoutes);
 app.use('/api/ecom/shiprocket', shiprocketRoutes);
 app.use('/api/razorpay', razorpayRoutes);
 
+console.log('API routes registered successfully');
+
 // Root route
 app.get('/', (req, res) => {
   res.json({ message: 'Welcome to GreenRaise API' });
@@ -65,17 +69,35 @@ app.get('/', (req, res) => {
 
 // Error handling middleware
 app.use((err, req, res, next) => {
-  console.error(err.stack);
+  console.error('Error middleware caught:', err);
+  console.error('Request URL:', req.url);
+  console.error('Request method:', req.method);
+  console.error('Request body:', req.body);
+  console.error('Error stack:', err.stack);
   res.status(500).json({ message: 'Something went wrong!', error: err.message });
+});
+
+// Handle unhandled promise rejections
+process.on('unhandledRejection', (err, promise) => {
+  console.error('Unhandled Promise Rejection:', err);
+  console.error('Promise:', promise);
+});
+
+// Handle uncaught exceptions
+process.on('uncaughtException', (err) => {
+  console.error('Uncaught Exception:', err);
+  process.exit(1);
 });
 
 // Start server
 const PORT = process.env.PORT || 2999;
 server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
+  console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
   console.log(`API endpoints available at:`);
   console.log(`- http://localhost:${PORT}/api/ecom/products`);
   console.log(`- http://localhost:${PORT}/api/ecom/blogs`);
   console.log(`- http://localhost:${PORT}/api/ecom/profile`);
   console.log(`- http://localhost:${PORT}/api/ecom/contact`);
+  console.log(`- http://localhost:${PORT}/api/ecom/profile/test (test endpoint)`);
 }); 
